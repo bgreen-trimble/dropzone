@@ -1,7 +1,8 @@
 import { isImageMimeType, type TransferItem } from './types'
 
 const isImageName = (name: string) => {
-  return name.match(/\.(jpeg|jpg|gif|png)$/)
+  const url = new URL(name)
+  return url.pathname.match(/\.(jpeg|jpg|gif|png)/)
 }
 
 const isUrl = (url: string) => {
