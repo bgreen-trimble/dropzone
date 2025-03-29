@@ -2,11 +2,11 @@ import { isImageMimeType, type TransferBlob, type TransferImage, type TransferIt
 
 const isImageName = (name: string) => {
   const url = new URL(name)
-  return url.pathname.match(/\.(jpeg|jpg|gif|png|webp)/)
+  return url.pathname.match(/\.(jpeg|jpg|gif|png|webp)/) !== null
 }
 
 const isUrl = (url: string) => {
-  return url.match(/^(https?:\/\/[^\s]+)$/)
+  return url.match(/^(https?:\/\/[^\s]+)$/) !== null
 }
 
 const isImageUrl = (url: string) => {
@@ -14,10 +14,10 @@ const isImageUrl = (url: string) => {
 }
 
 const isImageData = (data: string) => {
-  return data.match(/^data:image\/(jpeg|jpg|gif|png|webp)/)
+  return data.match(/^data:image\/(jpeg|jpg|gif|png|webp)/) !== null
 }
 
-const getImageFromUrl = (url: string) => {
+const fetchImage = (url: string) => {
   console.log('getImageFromUrl', url)
   // Encode the URL to handle special characters properly
   const encodedUrl = encodeURI(url)
@@ -31,8 +31,8 @@ const getImageFromUrl = (url: string) => {
       return response.blob()
     })
     .catch((error) => {
-      console.error('Error fetching image:', error)
-      return Promise.reject()
+      console.error('Error fetching image:', error.message)
+      throw error
     })
 }
 
@@ -48,6 +48,7 @@ const getImageFromUrl = (url: string) => {
 const fromStyle = (html: string) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
+  const urls = []
 
   // Look for elements with style containing background-image
   const elementsWithStyle = doc.querySelectorAll('[style*="background-image"]');
@@ -57,8 +58,7 @@ const fromStyle = (html: string) => {
     if (style) {
       const match = style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/i);
       if (match && match[1]) {
-        const url = match[1];
-        return url;
+        urls.push(match[1]);
       }
     }
   }
@@ -71,13 +71,12 @@ const fromStyle = (html: string) => {
     if (backgroundImage && backgroundImage !== 'none') {
       const match = backgroundImage.match(/url\(['"]?(.*?)['"]?\)/i);
       if (match && match[1]) {
-        const url = match[1];
-        return url;
+        urls.push(match[1]);
       }
     }
   }
 
-  return undefined;
+  return urls;
 }
 
 /**
@@ -94,7 +93,7 @@ const fromImg = (html: string) => {
   const attributes = Array.from(images).map(img => img.getAttribute('src')).filter(src => src !== null);
   console.log('attributes', attributes)
 
-  return attributes ? attributes[0] : undefined;
+  return attributes;
 }
 
 /**
@@ -119,6 +118,61 @@ const dataUrlToBlob = (dataUrl: string): Promise<Blob> => {
   return Promise.resolve(new Blob([byteArray], { type: mimeType }));
 };
 
+const fromUrls = async (type: string, urls: string[]) => {
+  const promises = urls.map(async (url) => {
+    try {
+      if (isUrl(url)) {
+        const data = await fetchImage(url);
+        return { type, data };
+      } else if (isImageData(url)) {
+        const data = await dataUrlToBlob(url);
+        return { type, data };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching image:', error);
+      return null;
+    }
+  });
+
+  const results = await Promise.all(promises);
+  return results.filter(Boolean) as TransferBlob[];
+}
+
+const fromHtml = async (type: string, html: string) => {
+  const urls = [...fromImg(html), ...fromStyle(html)].filter(Boolean)
+
+  return await fromUrls(type, urls)
+}
+
+const fromPlain = async (type: string, data: string) => {
+  return await fromUrls(type, [data])
+}
+
+const fromBlob = async (type: string, data: Blob) => {
+  return [{ type, data }]
+}
+
+const fromFiles = async (type: string, data: File[]) => {
+  const files = data.filter((file) => isImageMimeType(file.type))
+
+  const promises = files.map((file) => URL.createObjectURL(file)).map(async (url) => {
+    console.log('fromFiles', url)
+    try {
+      const data = await fetchImage(url);
+      return { type, data };
+    } catch (error) {
+      console.error('Error fetching image:', error);
+      return null;
+    } finally {
+      URL.revokeObjectURL(url)
+    }
+  })
+
+  const results = await Promise.all(promises);
+  return results.filter(Boolean) as TransferBlob[];
+}
+
 /*
   * Converts a TransferItem array to an image URL.
   *
@@ -132,83 +186,47 @@ const dataUrlToBlob = (dataUrl: string): Promise<Blob> => {
   * @param items - The TransferItem array to convert.
   * @returns An array of image URLs.
   */
-export const getImages = (items: TransferItem[]) => {
-  const images = items.map((item) => {
+export const fromTransfer = async (items: TransferItem[]) => {
+  const blobs = items.map(async (item) => {
     const { type, data } = item
-    let blob: Promise<Blob> | undefined = undefined
+    console.log(type, data)
 
-    try {
-      switch (type) {
-        case 'text/uri-list':
-        case 'text/plain':
-          const value = data as string
-          if (isImageUrl(value)) {
-            blob = getImageFromUrl(value)
-          } else if (isImageData(value)) {
-            blob = dataUrlToBlob(value)
-          }
-          break
+    switch (type) {
+      case 'text/html':
+        return await fromHtml(type, data as string)
 
-        case 'text/html':
-          console.log('text/html', data)
-          const url = fromImg(data as string) ?? fromStyle(data as string)
-          console.log('url', url)
-          if (url) {
-            if (isUrl(url)) {
-              blob = getImageFromUrl(url)
-            } else if (isImageData(url)) {
-              blob = dataUrlToBlob(url)
-            }
-          }
-          break
+      case 'text/plain':
+        return await fromPlain(type, data as string)
 
-        case 'Files':
-        case 'files':
-          if (data instanceof FileList) {
-            const files = Array.from(data)
-            const imageFiles = files.filter((file) => isImageMimeType(file.type))
-            if (imageFiles.length > 0) {
-              blob = getImageFromUrl(URL.createObjectURL(imageFiles[0]))
-            }
-          }
-          break
+      case 'text/uri-list':
+        return await fromPlain(type, data as string)
 
-        case 'submit':
-          blob = getImageFromUrl(data as string)
-          break;
+      case 'image/gif':
+      case 'image/jpeg':
+      case 'image/jpg':
+      case 'image/png':
+      case 'image/webp':
+        if (data instanceof Blob) {
+          return await fromBlob(type, data as Blob)
+        } else if (typeof data === 'string' && isImageUrl(data)) {
+          return await fromPlain(type, data as string)
+        }
+        return []
 
-        default:
-          if (isImageMimeType(type)) {
-            if (data instanceof Blob) {
-              blob = Promise.resolve(data)
-            } else if (typeof data === 'string') {
-              if (isImageUrl(data)) {
-                blob = getImageFromUrl(data)
-              }
-            }
-          }
-          break
-      }
-    } catch (error) {
-      console.error('Error processing item:', item, error)
+      case 'Files':
+      case 'files':
+        console.log('Files', data)
+        if (data instanceof FileList) {
+          return await fromFiles(type, Array.from(data))
+        }
+        return []
+      default:
+        return []
     }
+  });
 
-    if (blob === undefined) {
-      return undefined
-    } else {
-      const url = blob.then((blob) => URL.createObjectURL(blob as Blob))
-      return {
-        type,
-        data: url,
-      } as TransferBlob
-    }
-  }).filter((image) => image !== undefined)
-
-  return Promise
-    .all(images.map((image) => image.data))
-    .then((urls) =>
-      urls.map((url, index) => ({
-          type: images[index].type,
-          data: url
-        } as TransferImage)))
+  return Promise.all(blobs).then((blobs) => blobs.flat().map((blob) => ({
+    type: blob.type,
+    data: URL.createObjectURL(blob.data)
+  } as TransferImage)));
 }

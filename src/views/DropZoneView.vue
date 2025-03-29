@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { fromClipboard, fromDropEvent, getImages, type TransferItem, type TransferImage } from '@/utils'
+import { fromClipboard, fromDropEvent, fromTransfer, type TransferItem, type TransferImage } from '@/utils'
 
 // Make FileList available to the template
 const FileList = window.FileList
 
 const dropZone = ref()
 const eventType = ref()
-const transferItems = ref<TransferItem[]>()
+const transferred = ref<TransferItem[]>()
 const images = ref<TransferImage[]>()
 const submitInput = ref()
 
@@ -16,7 +16,7 @@ const handleDrop = (event: DragEvent) => {
   event.preventDefault()
   submitInput.value = undefined
   eventType.value = 'Drag Event: Drop'
-  transferItems.value = fromDropEvent(event)
+  transferred.value = fromDropEvent(event)
 }
 
 const handleClick = (event: MouseEvent) => {
@@ -27,7 +27,7 @@ const handleClick = (event: MouseEvent) => {
   fromClipboard()
     .then((items) => {
       console.log('items', items)
-      transferItems.value = items
+      transferred.value = items
 
     })
     .catch((error) => {
@@ -42,25 +42,32 @@ const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files) {
     eventType.value = 'File Upload'
-    transferItems.value = [{ type: 'files', data: target.files }]
+    transferred.value = [{ type: 'files', data: target.files }]
   }
 }
 
 const handleSubmit = (event: Event) => {
   console.log('handleSubmit', event)
   eventType.value = 'Submit'
-  transferItems.value = [{ type: 'submit', data: submitInput.value }]
+  transferred.value = [{ type: 'text/plain', data: submitInput.value }]
 }
 
-watch(transferItems, (items) => {
+watch(transferred, (items) => {
   if (items) {
-    getImages(items).then((items) => {
+    fromTransfer(items).then((items) => {
       console.log('blobs', images)
       images.value = items
     })
   }
 })
 
+watch(images, (_, old) => {
+  if (old) {
+    old.forEach((image) => {
+      URL.revokeObjectURL(image.data)
+    })
+  }
+})
 </script>
 
 <template>
@@ -139,10 +146,10 @@ watch(transferItems, (items) => {
 
       <div v-if="eventType">
         <h2>{{ eventType }}</h2>
-        <div v-if="transferItems">
+        <div v-if="transferred">
           <h3>Items</h3>
           <ul>
-            <li v-for="(item, index) in transferItems" :key="index">
+            <li v-for="(item, index) in transferred" :key="index">
               <div v-if="item.data instanceof FileList">
                 <strong> {{ item.type }} </strong>
                 <ul>
