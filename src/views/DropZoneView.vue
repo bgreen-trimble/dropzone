@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { fromClipboard, fromDropEvent, getImages, type TransferItem } from '@/utils'
+import { fromClipboard, fromDropEvent, getImages, type TransferItem, type TransferImage } from '@/utils'
 
 // Make FileList available to the template
 const FileList = window.FileList
@@ -8,7 +8,7 @@ const FileList = window.FileList
 const dropZone = ref()
 const eventType = ref()
 const transferItems = ref<TransferItem[]>()
-const images = ref<string[]>()
+const images = ref<TransferImage[]>()
 const submitInput = ref()
 
 const handleDrop = (event: DragEvent) => {
@@ -54,9 +54,9 @@ const handleSubmit = (event: Event) => {
 
 watch(transferItems, (items) => {
   if (items) {
-    getImages(items).then((blobs) => {
-      console.log('blobs', blobs)
-      images.value = blobs.map((blob) => URL.createObjectURL(blob))
+    getImages(items).then((items) => {
+      console.log('blobs', images)
+      images.value = items
     })
   }
 })
@@ -130,7 +130,10 @@ watch(transferItems, (items) => {
         <h2>Images</h2>
         <h3 v-if="images.length === 0" style="color: red;">Unable to retrieve images.</h3>
         <div v-else style="display: flex; flex-wrap: wrap; gap: 16px;">
-          <img v-for="(image, index) in images" :key="index" :src="image" alt="Image" style="height: 256px;" />
+          <div v-for="(image, index) in images" :key="index" style="display: flex; flex-direction: column; align-items: center; overflow: hidden;">
+            <img :src="image.data as string" alt="Image" style="object-fit: cover;"  height="256px"/>
+            <h4>{{ image.type }}</h4>
+          </div>
         </div>
       </div>
 

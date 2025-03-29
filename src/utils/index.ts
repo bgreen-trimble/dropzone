@@ -1,4 +1,4 @@
-export { isImageMimeType, type TransferItem } from './types'
+export { isImageMimeType, type TransferItem, type TransferBlob, type TransferImage } from './types'
 export { fromDropEvent } from './drag'
 export { fromClipboard } from './clipboard'
 export { getImages } from './image'
