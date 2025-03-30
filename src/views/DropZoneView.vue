@@ -107,7 +107,7 @@ watch(images, (_, old) => {
             <path d="M40.3332 13.747L17.0832 13.747L17.0832 33.122L40.3332 33.122L40.3332 13.747Z" class="qOFLsb">
             </path>
             <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M0.614479 12.7783L6.74988 12.7783L6.74988 14.7158L2.55198 14.7158L2.55198 18.9137L0.614479 18.9137L0.614479 12.7783Z"
+              d="M0.614479 12https://www.wired.com/story/natal-conference-matchmaking/.7783L6.74988 12.7783L6.74988 14.7158L2.55198 14.7158L2.55198 18.9137L0.614479 18.9137L0.614479 12.7783Z"
               fill="#BDC1C6"></path>
             <path fill-rule="evenodd" clip-rule="evenodd"
               d="M39.3644 42.4866L39.3644 38.2887L41.3019 38.2887L41.3019 44.4241L35.1665 44.4241L35.1665 42.4866L39.3644 42.4866Z"
@@ -131,7 +131,7 @@ watch(images, (_, old) => {
               <h2 style="color: #1a73e8; margin: 0 8px; text-decoration: none;">upload a file</h2>
             </label>
 
-            <h2 v-if="!isSafari">or click clipboard icon.&nbsp;</h2>
+            <h2 v-if="!isSafari">or copy from clipboard&nbsp;</h2>
             <svg v-if="!isSafari" @pointerdown="handleClipboard" xmlns="http://www.w3.org/2000/svg" width="32"
               height="32" fill="currentColor" viewBox="0 0 24 24"
               style="cursor: pointer; vertical-align: middle; margin: auto 0;">
