@@ -5,7 +5,7 @@
  */
 export type TransferItem = {
   type: string
-  data: string | FileList
+  data: string | FileList | Blob
 }
 
 /**

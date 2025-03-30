@@ -33,6 +33,8 @@ const getClipboardItem = (clipboardItem: ClipboardItem) => {
   */
 export const fromClipboard = (): Promise<TransferItem[]> => {
   console.log('fromClipboard')
+  console.log('navigator.userActivation.isActive', navigator.userActivation.isActive)
+
 
   return navigator.clipboard.read().then((clipboardItems) => {
     console.log('clipboard items', clipboardItems)
@@ -44,6 +46,6 @@ export const fromClipboard = (): Promise<TransferItem[]> => {
     })
   }).catch((error) => {
     console.error('Failed to read clipboard contents: ', error)
-    return []
+    throw error
   })
 }
