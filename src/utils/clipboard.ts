@@ -17,7 +17,6 @@ const getClipboardItemType = (clipboardItem: ClipboardItem, type: string) => {
 }
 
 const getClipboardItem = (clipboardItem: ClipboardItem) => {
-
   const types = Array.from(clipboardItem.types).map((type) => getClipboardItemType(clipboardItem, type));
 
   return Promise.all(types).then((items) => {
