@@ -31,11 +31,15 @@ const getClipboardItem = (clipboardItem: ClipboardItem) => {
   *
   * @returns An array of TransferItem objects.
   */
+/**
+ * It's not possible to read data from the navigator.clipboard API in Safari
+ * without invoking what is referred to as the platform-specific UI unless the
+ * origin of the data that is already on the clipboard is the same as origin
+ * of the read request.
+ *
+ * See: https://webkit.org/blog/10855/async-clipboard-api
+ */
 export const fromClipboard = (): Promise<TransferItem[]> => {
-  console.log('fromClipboard')
-  console.log('navigator.userActivation.isActive', navigator.userActivation.isActive)
-
-
   return navigator.clipboard.read().then((clipboardItems) => {
     console.log('clipboard items', clipboardItems)
 
