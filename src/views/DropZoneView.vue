@@ -14,6 +14,26 @@ const eventType = ref()
 const transferred = ref<TransferItem[]>()
 const images = ref<TransferImage[]>()
 const submitInput = ref()
+const isDragingOver = ref(false)
+
+const handleDragEnter = (event: DragEvent) => {
+  console.log('handleDragEnter', event)
+  event.preventDefault()
+  isDragingOver.value = true
+}
+
+const handleDragOver = (event: DragEvent) => {
+  console.log('handleDragOver', event)
+  event.preventDefault()
+  isDragingOver.value = true
+}
+
+const handleDragLeave = (event: DragEvent) => {
+  console.log('handleDragLeave', event)
+  event.preventDefault()
+  isDragingOver.value = false
+}
+
 
 const handleDrop = (event: DragEvent) => {
   console.log('handleDrop', event)
@@ -21,6 +41,7 @@ const handleDrop = (event: DragEvent) => {
   submitInput.value = undefined
   eventType.value = 'Drag Event: Drop'
   transferred.value = fromDropEvent(event)
+  isDragingOver.value = false
 }
 
 const handleClipboard = async (event: MouseEvent) => {
@@ -80,8 +101,9 @@ watch(images, (_, old) => {
         <img src="../assets/download-file-icon.svg" alt="Drop Zone" style="width: 32px; height: 32px;" />
         <h1>Drop Zone</h1>
       </div>
-      <div ref="dropZone" style="padding: 32px; border: 2px dashed #ccc; border-radius: 8px;" @dragover.prevent
-        @drop="handleDrop">
+      <div ref="dropZone" style="padding: 32px; border: 2px dashed #ccc; border-radius: 8px; background-color: lightgray;" :style="isDragingOver ? 'border: 2px solid blue;' : 'border: 2px dashed #ccc;'"
+        @dragover.prevent @dragenter.prevent @dragleave.prevent @drop.prevent
+        @drop="handleDrop" @dragleave="handleDragLeave" @dragover="handleDragOver">
         <div style="display: flex; justify-content: center; width: 100%; gap: 8px;">
           <svg width="59" height="45" viewBox="0 0 59 45" fill="none" xmlns="http://www.w3.org/2000/svg"
             style="vertical-align: middle; margin: auto 0;">
