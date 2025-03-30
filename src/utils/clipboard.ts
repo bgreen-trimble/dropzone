@@ -1,6 +1,7 @@
 import { isImageMimeType, type TransferItem } from './types'
 
 const getClipboardItemText = (blob: Blob) => {
+  console.log('blob', blob)
   return blob.text().then((text) => {
     console.log(`${blob.type} - text`, text)
     return text
@@ -26,24 +27,25 @@ const getClipboardItem = (clipboardItem: ClipboardItem) => {
 
 }
 
-/*
-  * Converts the contents of the clipboard to a TransferItem array.
-  *
-  * @returns An array of TransferItem objects.
-  */
 /**
- * It's not possible to read data from the navigator.clipboard API in Safari
- * without invoking what is referred to as the platform-specific UI unless the
- * origin of the data that is already on the clipboard is the same as origin
- * of the read request.
+ * This function uses the Clipboard API to read data from the clipboard.
+ * It returns a promise that resolves to an array of TransferItem objects.
+ * Each TransferItem contains a type and the corresponding data.
  *
- * See: https://webkit.org/blog/10855/async-clipboard-api
+ * Clipboard data contains a list of items, each with an array of key/value pairs.
+ * The key is the MIME type of the data, and the value is a Blob object. All of these
+ * are read and then flattened into a single array of TransferItem objects.
+ *
+ * @see https://webkit.org/blog/10855/async-clipboard-api
+ * @returns A promise that resolves to an array of TransferItem objects.
+ * @throws Will throw an error if clipboard access fails or is denied.
  */
 export const fromClipboard = (): Promise<TransferItem[]> => {
   return navigator.clipboard.read().then((clipboardItems) => {
     console.log('clipboard items', clipboardItems)
 
     const items = Array.from(clipboardItems).map((clipboardItem) => getClipboardItem(clipboardItem))
+    console.log('items', items)
     return Promise.all(items).then((items) => {
       console.log('items', items)
       return items.flat() // Flatten the array of arrays. It the clipboard contains multiple items, each will be flattened into the result.

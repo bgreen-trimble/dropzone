@@ -7,6 +7,11 @@ const FileList = window.FileList
 
 const userAgent = navigator.userAgent;
 
+/*
+ * Note: It's not possible to read data from the navigator.clipboard API in Safari
+ * without invoking the platform-specific UI unless the origin of the data that is
+ * already in the clipboard is the same as origin of the read request.
+ */
 const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome');
 
 const dropZone = ref()
@@ -17,13 +22,11 @@ const submitInput = ref()
 const isDraggingOver = ref(false)
 
 const handleDragOver = (event: DragEvent) => {
-  console.log('handleDragOver', event)
   event.preventDefault()
   isDraggingOver.value = true
 }
 
 const handleDragLeave = (event: DragEvent) => {
-  console.log('handleDragLeave', event)
   event.preventDefault()
   isDraggingOver.value = false
 }
@@ -64,6 +67,11 @@ const handleFileUpload = (event: Event) => {
   }
 }
 
+/**
+ * Handle the submit event
+ * This is an artificial form of data transfer. It transforms the input value
+ * into a text/plain data type and sets it as the data of the transfer.
+ */
 const handleSubmit = (event: Event) => {
   console.log('handleSubmit', event)
   eventType.value = 'Submit'
@@ -72,8 +80,9 @@ const handleSubmit = (event: Event) => {
 
 watch(transferred, (items) => {
   if (items) {
+    // convert the new transfer items to images
     fromTransfer(items).then((items) => {
-      console.log('blobs', items)
+      console.log('transfer item', items)
       images.value = items
     })
   }
@@ -81,6 +90,7 @@ watch(transferred, (items) => {
 
 watch(images, (_, old) => {
   if (old) {
+    // Revoke the old object URLs to free up memory
     old.forEach((image) => {
       URL.revokeObjectURL(image.data)
     })
