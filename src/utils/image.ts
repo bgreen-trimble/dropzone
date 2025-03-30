@@ -199,6 +199,7 @@ export const fromTransfer = async (items: TransferItem[]) => {
         return await fromPlain(type, data as string)
 
       case 'text/uri-list':
+        // chrome sends text/uri-list as a single line
         return await fromPlain(type, data as string)
 
       case 'image/gif':

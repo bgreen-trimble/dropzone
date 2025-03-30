@@ -32,6 +32,8 @@ const getClipboardItem = (clipboardItem: ClipboardItem) => {
   * @returns An array of TransferItem objects.
   */
 export const fromClipboard = (): Promise<TransferItem[]> => {
+  console.log('fromClipboard')
+
   return navigator.clipboard.read().then((clipboardItems) => {
     console.log('clipboard items', clipboardItems)
 
@@ -40,5 +42,8 @@ export const fromClipboard = (): Promise<TransferItem[]> => {
       console.log('items', items)
       return items.flat() // Flatten the array of arrays. It the clipboard contains multiple items, each will be flattened into the result.
     })
+  }).catch((error) => {
+    console.error('Failed to read clipboard contents: ', error)
+    return []
   })
 }
