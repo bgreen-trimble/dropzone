@@ -4,7 +4,7 @@ import { isImageUrl, isImageData } from '../helpers';
 import { type TransferItem } from '../types';
 
 // Mock the fetch function
-vi.mock('global', () => ({
+vi.mock('window', () => ({
   fetch: vi.fn(),
 }));
 
@@ -30,10 +30,12 @@ describe('fromTransfer', () => {
     URL.revokeObjectURL = vi.fn();
 
     // Mock fetch to return a successful response with a mock blob
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      blob: vi.fn().mockResolvedValue(new Blob(['mock image data'], { type: 'image/jpeg' })),
-    });
+    window.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        blob: vi.fn().mockResolvedValue(new Blob(['mock image data'], { type: 'image/jpeg' })),
+        } as unknown as Response),
+    );
 
     // Mock helper functions
     (isImageUrl as any).mockImplementation((url: string) => url.startsWith('http'));
@@ -44,7 +46,7 @@ describe('fromTransfer', () => {
     // Restore original functions
     URL.createObjectURL = originalCreateObjectURL;
     URL.revokeObjectURL = originalRevokeObjectURL;
-    global.fetch = originalFetch;
+    window.fetch = originalFetch;
 
     vi.clearAllMocks();
   });
@@ -127,12 +129,7 @@ describe('fromTransfer', () => {
 
   it('should handle Files type with FileList data', async () => {
     const mockFile = new File(['mock image data'], 'image.jpg', { type: 'image/jpeg' });
-    const mockFileList = {
-      0: mockFile,
-      length: 1,
-      item: (i: number) => mockFile,
-      [Symbol.iterator]: function* () { yield mockFile; }
-    } as FileList;
+    const mockFileList: FileList = [mockFile].values() as unknown as FileList;
 
     const items: TransferItem[] = [
       { type: 'Files', data: mockFileList }

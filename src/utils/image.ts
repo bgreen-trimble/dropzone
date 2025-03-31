@@ -235,9 +235,7 @@ export const fromTransfer = async (items: TransferItem[]) => {
       case 'Files':
       case 'files':
         console.log('Files', data)
-        if (data instanceof FileList) {
-          return await fromFiles(type, Array.from(data))
-        }
+        return await fromFiles(type, Array.from(data as FileList))
         return []
       default:
         return []
