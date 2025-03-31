@@ -57,6 +57,26 @@ const handleClipboard = async (event: MouseEvent) => {
     })
 }
 
+const handleKeyDown = (event: KeyboardEvent) => {
+  console.log('handleKeyDown', event)
+  if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+    // Ctrl+V or Cmd+V is pressed
+    // Your code to handle the paste event goes here
+    console.log('Paste event detected!');
+
+    // To access the pasted data, you can use the 'paste' event
+    fromClipboard()
+    .then((items) => {
+      console.log('items', items)
+      transferred.value = items
+    })
+    .catch((error) => {
+      console.error('Error reading clipboard:', error)
+      transferred.value = undefined
+    })
+  }
+}
+
 const handleFileUpload = (event: Event) => {
   console.log('handleFileUpload', event)
   submitInput.value = undefined
@@ -97,6 +117,7 @@ watch(images, (_, old) => {
     })
   }
 })
+
 </script>
 
 <template>
@@ -106,10 +127,10 @@ watch(images, (_, old) => {
         <img src="../assets/download-file-icon.svg" alt="Drop Zone" style="width: 32px; height: 32px;" />
         <h1>Drop Zone</h1>
       </div>
-      <div ref="dropZone" style="padding: 32px; border-radius: 8px; background-color: lightgray;"
+      <div ref="dropZone" tabindex="0" style="padding: 32px; border-radius: 8px; background-color: lightgray;"
         :style="isDraggingOver ? 'border: 2px solid blue;' : 'border: 2px solid lightgray;'" @dragover.prevent
         @dragenter.prevent @dragleave.prevent @drop.prevent @drop="handleDrop" @dragleave="handleDragLeave"
-        @dragover="handleDragOver">
+        @dragover="handleDragOver" @keydown="handleKeyDown">
         <div style="display: flex; justify-content: center; width: 100%; gap: 8px;">
           <svg width="59" height="45" viewBox="0 0 59 45" fill="none" xmlns="http://www.w3.org/2000/svg"
             style="vertical-align: middle; margin: auto 0;">
