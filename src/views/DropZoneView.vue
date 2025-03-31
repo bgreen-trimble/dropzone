@@ -53,6 +53,7 @@ const handleClipboard = async (event: MouseEvent) => {
     })
     .catch((error) => {
       console.error('Error reading clipboard:', error)
+      transferred.value = undefined
     })
 }
 

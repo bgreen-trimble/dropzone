@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fromTransfer } from '../image';
-import { isImageUrl, isImageData } from '../helpers';
 import { type TransferItem } from '../types';
 
 // Mock the fetch function
@@ -8,21 +7,11 @@ vi.mock('window', () => ({
   fetch: vi.fn(),
 }));
 
-// Mock the helpers
-vi.mock('../helpers', () => ({
-  isImageUrl: vi.fn(),
-  isImageData: vi.fn(),
-}));
-
 describe('fromTransfer', () => {
-  let originalCreateObjectURL: typeof URL.createObjectURL;
-  let originalRevokeObjectURL: typeof URL.revokeObjectURL;
   let originalFetch: typeof fetch;
 
   beforeEach(() => {
     // Save original functions
-    originalCreateObjectURL = URL.createObjectURL;
-    originalRevokeObjectURL = URL.revokeObjectURL;
     originalFetch = global.fetch;
 
     // Mock URL.createObjectURL
@@ -36,16 +25,10 @@ describe('fromTransfer', () => {
         blob: vi.fn().mockResolvedValue(new Blob(['mock image data'], { type: 'image/jpeg' })),
         } as unknown as Response),
     );
-
-    // Mock helper functions
-    (isImageUrl as any).mockImplementation((url: string) => url.startsWith('http'));
-    (isImageData as any).mockImplementation((url: string) => url.startsWith('data:image'));
   });
 
   afterEach(() => {
     // Restore original functions
-    URL.createObjectURL = originalCreateObjectURL;
-    URL.revokeObjectURL = originalRevokeObjectURL;
     window.fetch = originalFetch;
 
     vi.clearAllMocks();
@@ -149,9 +132,6 @@ describe('fromTransfer', () => {
     const items: TransferItem[] = [
       { type: 'text/plain', data: dataUrl }
     ];
-
-    (isImageUrl as any).mockReturnValue(false);
-    (isImageData as any).mockReturnValue(true);
 
     global.atob = vi.fn().mockReturnValue('mock decoded data');
 
