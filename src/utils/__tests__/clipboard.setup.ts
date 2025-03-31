@@ -24,9 +24,6 @@ beforeAll(() => {
 
   // Mock clipboard API
   const clipboard = {
-    writeText: vi.fn().mockResolvedValue(undefined),
-    readText: vi.fn().mockResolvedValue(undefined),
-    write: vi.fn().mockResolvedValue(undefined),
     read: vi.fn().mockReturnValue(read()),
   };
 

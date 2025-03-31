@@ -25,7 +25,6 @@ export type TransferBlob = {
   data: Blob
 }
 
-
 const isImageName = (name: string) => {
   const url = new URL(name)
   return url.pathname.match(/\.(jpeg|jpg|gif|png|webp)/) !== null
@@ -101,7 +100,7 @@ const fetchImage = (url: string): Promise<Blob> => {
  * @param {string} html - The HTML string to extract the image URL from
  * @returns {string|undefined} The first image URL found in the HTML string, or undefined if no image URL was found
  */
-const imagesFromStyle = (html: string) => {
+export const imagesFromStyle = (html: string) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const urls = []
@@ -119,7 +118,7 @@ const imagesFromStyle = (html: string) => {
     }
   }
 
-  // Also search for computed styles with background-image if direct style didn't work
+  // Also search for computed styles with background-image
   const allElements = doc.querySelectorAll('*');
   for (const element of allElements) {
     const computedStyle = window.getComputedStyle(element);
