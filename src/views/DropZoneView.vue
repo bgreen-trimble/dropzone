@@ -63,6 +63,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
     // Ctrl+V or Cmd+V is pressed
     // Your code to handle the paste event goes here
     console.log('Paste event detected!');
+    submitInput.value = undefined
+    eventType.value = 'Clipboard'
 
     // To access the pasted data, you can use the 'paste' event
     fromClipboard()
