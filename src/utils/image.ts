@@ -236,7 +236,6 @@ export const fromTransfer = async (items: TransferItem[]) => {
       case 'files':
         console.log('Files', data)
         return await fromFiles(type, Array.from(data as FileList))
-        return []
       default:
         return []
     }

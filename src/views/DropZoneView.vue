@@ -5,26 +5,13 @@ import { fromClipboard, fromDropEvent, fromTransfer, type TransferItem, type Tra
 // Make FileList available to the template
 const FileList = window.FileList
 
-const userAgent = navigator.userAgent;
-
-/*
- * Note: It's not possible to read data from the navigator.clipboard API in Safari
- * without invoking the platform-specific UI unless the origin of the data that is
- * already in the clipboard is the same as origin of the read request.
- */
-const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome');
-
 const dropZone = ref()
 const eventType = ref()
 const transferred = ref<TransferItem[]>()
 const images = ref<TransferImage[]>()
 const submitInput = ref()
 const isDraggingOver = ref(false)
-
-const handleDragOver = (event: DragEvent) => {
-  console.log('handleDragOver', event)
-  event.preventDefault()
-}
+const error = ref(false)
 
 const handleDragEnter = (event: DragEvent) => {
   console.log('handleDragEnter', event)
@@ -38,7 +25,6 @@ const handleDragLeave = (event: DragEvent) => {
   isDraggingOver.value = false
 }
 
-
 const handleDrop = (event: DragEvent) => {
   console.log('handleDrop', event)
   event.preventDefault()
@@ -46,22 +32,6 @@ const handleDrop = (event: DragEvent) => {
   eventType.value = 'Drag Event: Drop'
   transferred.value = fromDropEvent(event)
   isDraggingOver.value = false
-}
-
-const handleClipboard = async (event: MouseEvent) => {
-  console.log('handleClick', event)
-  submitInput.value = undefined
-  eventType.value = 'Clipboard'
-
-  fromClipboard()
-    .then((items) => {
-      console.log('items', items)
-      transferred.value = items
-    })
-    .catch((error) => {
-      console.error('Error reading clipboard:', error)
-      transferred.value = undefined
-    })
 }
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -109,11 +79,19 @@ const handleSubmit = (event: Event) => {
 }
 
 watch(transferred, (items) => {
-  if (items) {
+  console.log('watch transferred in:', items?.length)
+  if (items?.length) {
     // convert the new transfer items to images
     fromTransfer(items).then((items) => {
       console.log('transfer item', items)
+      console.log('watch transferred out:', items?.length)
       images.value = items
+
+      if (items?.length) {
+        error.value = false
+      } else {
+        error.value = true
+      }
     })
   }
 })
@@ -137,26 +115,18 @@ watch(images, (_, old) => {
         <h1>Drop Zone</h1>
       </div>
       <div>
-        <div ref="dropZone" tabindex="0" class="NzSfif" @dragover.prevent @dragenter.prevent @dragleave.prevent
-          @drop.prevent @drop="handleDrop" @dragenter="handleDragEnter" @dragleave="handleDragLeave"
+        <div ref="dropZone" tabindex="0" class="image-search-base NzSfif" @dropenter.prevent @dragover.prevent
+         @dragenter="handleDragEnter" @dragleave="handleDragLeave" @drop="handleDrop"
           @keydown="handleKeyDown">
           <div class="KoWHpd">
             <div>
-              <h1 style="text-align: center; font-size: 16px; font-weight: 400; margin-bottom: 14px">3DW Image Search
-              </h1>
+              <div style="text-align: center; font-size: 16px; font-weight: 400; margin-bottom: 14px">3DW Image Search
+              </div>
             </div>
             <div class="NrdQVe">
-              <div class="alTBQe" style="display: none;">
+              <div v-if="error" class="alTBQe">
                 <div class="OHzWjb">
-                  <span>Can't upload. Use an image in one of these formats: .jpg, .png, .bmp, .tif, or .webp</span>
-                  <span>Can't upload. Use an image in one of these formats: .jpg, .png, .bmp, or .webp</span>
-                  <span>Can't upload. Use an image smaller than 20MB.</span>
-                  <span>Can't search multiple images. Add one image at a time.</span>
                   <span>Can't use this link. Check for typos or use another link to try again.</span>
-                  <span>Can't use this link. Check that your link starts with 'http://' or 'https://' to try
-                    again.</span>
-                  <span>Can't use this link. Check for typos or use another link to try again.</span>
-                  <span>Can't search multiple images. Add one image at a time.</span>
                 </div>
               </div>
               <div v-if="isDraggingOver === false" class="f6GA0">
@@ -199,13 +169,12 @@ watch(images, (_, old) => {
                     <div class="diOlIe"></div>
                   </div>
                   <div class="PXT6cd">
-                    <input class="cB9M7" placeholder="Paste image link" autocomplete="false" autocorrect="false"
-                      text="text">
-                    <div class="Qwbd3" tabindex="0" role="button">Search</div>
+                    <input class="cB9M7" v-model="submitInput" placeholder="Paste image link" autocomplete="false" autocorrect="false" text="text">
+                    <button class="Qwbd3" tabindex="0" role="button"  @click="handleSubmit">Search</button>
                   </div>
                 </div>
               </div>
-              <div v-else class="CacfB" @drop="handleDrop">
+              <div v-else class="CacfB">
                 <div class="ZeVBtc" style="text-align: center;">Drop an image here</div>
               </div>
             </div>
@@ -251,9 +220,12 @@ watch(images, (_, old) => {
 </template>
 
 <style scoped>
-.NzSfif {
+.image-search-base {
   color-scheme: light;
   font-family: Roboto, Arial, sans-serif;
+}
+
+.NzSfif {
   font-size: 14px;
   background: #fff;
   border-radius: 24px;
@@ -270,7 +242,6 @@ watch(images, (_, old) => {
 }
 
 .NrdQVe {
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   background: rgb(248, 249, 250);
   border: 1px dashed #c0c0c0;
@@ -283,8 +254,6 @@ watch(images, (_, old) => {
 }
 
 .alTBQe {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   align-items: center;
   background-color: rgb(252, 232, 230);
@@ -294,18 +263,14 @@ watch(images, (_, old) => {
 }
 
 .OHzWjb {
-  color-scheme: light;
   color: rgb(179, 20, 18);
   flex: 1;
-  font-family: "Google Sans", Roboto, Arial, sans-serif;
   font-size: 12px;
   padding: 5px;
   text-align: center;
 }
 
 .CacfB {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   align-items: center;
   flex-direction: column;
@@ -320,9 +285,7 @@ watch(images, (_, old) => {
 }
 
 .ZeVBtc {
-  color-scheme: light;
   color: rgb(95, 99, 104);
-  font-family: "Google Sans", Roboto, Arial, sans-serif;
   font-size: 16px;
   line-height: 25px;
   max-width: 300px;
@@ -330,8 +293,6 @@ watch(images, (_, old) => {
 }
 
 .DV7the {
-  color-scheme: light;
-  font-family: "Google Sans", Roboto, Arial, sans-serif;
   font-size: 16px;
   line-height: 25px;
   color: rgb(25, 103, 210);
@@ -340,8 +301,6 @@ watch(images, (_, old) => {
 }
 
 .f6GA0 {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   height: 100%;
   justify-content: center;
@@ -354,8 +313,6 @@ watch(images, (_, old) => {
 }
 
 .BH9rn {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   align-items: center;
   display: inline-flex;
@@ -366,16 +323,12 @@ watch(images, (_, old) => {
 }
 
 .RaoUUe {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   display: inline-flex;
   margin-right: 18px;
 }
 
 .e8Eule {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   box-sizing: border-box;
   display: flex;
@@ -385,16 +338,12 @@ watch(images, (_, old) => {
 }
 
 .YJx25 {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   align-items: center;
   display: flex;
 }
 
 .diOlIe {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   border-top: 1px solid rgb(232, 234, 237);
   flex-grow: 1;
@@ -402,26 +351,21 @@ watch(images, (_, old) => {
 }
 
 .aHK1bd {
-  color-scheme: light;
   color: rgb(95, 99, 104);
   cursor: default;
   flex-shrink: 0;
-  font-family: "Google Sans Display", Roboto, Arial, sans-serif;
   font-size: 14px;
   margin-left: 20px;
   margin-right: 20px;
 }
 
 .PXT6cd {
-  color-scheme: light;
-  font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   display: flex;
   margin-top: 14px;
 }
 
 .cB9M7 {
-  color-scheme: light;
   background-color: #fff;
   border: 1px solid rgb(218, 220, 224);
   color: rgb(60, 64, 67);
@@ -429,7 +373,6 @@ watch(images, (_, old) => {
   display: inline-flex;
   flex-grow: 1;
   font-size: 14px;
-  font-family: "Google Sans Display", Roboto, Arial, sans-serif;
   height: 40px;
   padding: 0 24px;
   width: 100%;
@@ -446,12 +389,18 @@ watch(images, (_, old) => {
   cursor: pointer;
   display: inline-flex;
   flex-shrink: 0;
-  font-family: "Google Sans", Roboto, Arial, sans-serif;
   font-size: 14px;
   justify-content: center;
   letter-spacing: .25px;
   margin-left: 8px;
   padding: 8px 24px;
   outline: 0;
+}
+
+.Qwbd3:hover {
+  background: rgb(232, 234, 237);
+}
+.Qwbd3:active {
+  background: rgb(232, 234, 237);
 }
 </style>
