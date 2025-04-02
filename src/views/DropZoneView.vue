@@ -22,11 +22,18 @@ const submitInput = ref()
 const isDraggingOver = ref(false)
 
 const handleDragOver = (event: DragEvent) => {
+  console.log('handleDragOver', event)
+  event.preventDefault()
+}
+
+const handleDragEnter = (event: DragEvent) => {
+  console.log('handleDragEnter', event)
   event.preventDefault()
   isDraggingOver.value = true
 }
 
 const handleDragLeave = (event: DragEvent) => {
+  console.log('handleDragLeave', event)
   event.preventDefault()
   isDraggingOver.value = false
 }
@@ -68,14 +75,14 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
     // To access the pasted data, you can use the 'paste' event
     fromClipboard()
-    .then((items) => {
-      console.log('items', items)
-      transferred.value = items
-    })
-    .catch((error) => {
-      console.error('Error reading clipboard:', error)
-      transferred.value = undefined
-    })
+      .then((items) => {
+        console.log('items', items)
+        transferred.value = items
+      })
+      .catch((error) => {
+        console.error('Error reading clipboard:', error)
+        transferred.value = undefined
+      })
   }
 }
 
@@ -129,64 +136,80 @@ watch(images, (_, old) => {
         <img src="../assets/download-file-icon.svg" alt="Drop Zone" style="width: 32px; height: 32px;" />
         <h1>Drop Zone</h1>
       </div>
-      <div ref="dropZone" tabindex="0" style="padding: 32px; border-radius: 8px; background-color: lightgray;"
-        :style="isDraggingOver ? 'border: 2px solid blue;' : 'border: 2px solid lightgray;'" @dragover.prevent
-        @dragenter.prevent @dragleave.prevent @drop.prevent @drop="handleDrop" @dragleave="handleDragLeave"
-        @dragover="handleDragOver" @keydown="handleKeyDown">
-        <div style="display: flex; justify-content: center; width: 100%; gap: 8px;">
-          <svg width="59" height="45" viewBox="0 0 59 45" fill="none" xmlns="http://www.w3.org/2000/svg"
-            style="vertical-align: middle; margin: auto 0;">
-            <path d="M40.3332 13.747L1.58323 13.747L1.58323 43.4553L40.3332 43.4553L40.3332 13.747Z" class="ArIAXb">
-            </path>
-            <path d="M40.3332 13.747L17.0832 13.747L17.0832 33.122L40.3332 33.122L40.3332 13.747Z" class="qOFLsb">
-            </path>
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M0.614479 12https://www.wired.com/story/natal-conference-matchmaking/.7783L6.74988 12.7783L6.74988 14.7158L2.55198 14.7158L2.55198 18.9137L0.614479 18.9137L0.614479 12.7783Z"
-              fill="#BDC1C6"></path>
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M39.3644 42.4866L39.3644 38.2887L41.3019 38.2887L41.3019 44.4241L35.1665 44.4241L35.1665 42.4866L39.3644 42.4866Z"
-              fill="#BDC1C6"></path>
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M0.614479 38.2887L2.55198 38.2887L2.55198 42.4866L6.74987 42.4866L6.74987 44.4241L0.614479 44.4241L0.614479 38.2887Z"
-              fill="#BDC1C6"></path>
-            <path d="M19.6665 30.2531H58.4165L58.4165 0.544722H19.6665L19.6665 30.2531Z" fill="#AECBFA"></path>
-            <path
-              d="M19.6665 21.8429L19.6665 30.2525L58.4168 30.2525L58.4168 19.7406L49.6667 12.4069C48.6234 11.5342 47.2931 11.0699 45.9272 11.1018C44.5614 11.1337 43.2547 11.6596 42.2542 12.5801L33.4166 20.7918L28.4166 17.2548C27.7332 16.7781 26.9013 16.5563 26.0684 16.6288C25.2354 16.7012 24.4554 17.0632 23.8666 17.6505L19.6665 21.8429Z"
-              fill="#669DF6"></path>
-            <path
-              d="M30.0056 12.9386C31.7315 12.9386 33.1306 11.5395 33.1306 9.8136C33.1306 8.08773 31.7315 6.68863 30.0056 6.68863C28.2798 6.68863 26.8807 8.08773 26.8807 9.8136C26.8807 11.5395 28.2798 12.9386 30.0056 12.9386Z"
-              fill="#E8F0FE"></path>
-          </svg>
-          <div style="display: flex; justify-content: center; ">
-            <h2 v-if="!isSafari">Drop here, </h2>
-            <h2 v-else>Drop here or </h2>
-            <label for="fileUpload" style="display: flex; align-items: center; cursor: pointer;">
-              <input id="fileUpload" type="file" multiple style="display: none;" @change="handleFileUpload" />
-              <h2 style="color: #1a73e8; margin: 0 8px; text-decoration: none;">upload a file</h2>
-            </label>
-
-            <h2 v-if="!isSafari">or copy from clipboard&nbsp;</h2>
-            <svg v-if="!isSafari" @pointerdown="handleClipboard" xmlns="http://www.w3.org/2000/svg" width="32"
-              height="32" fill="currentColor" viewBox="0 0 24 24"
-              style="cursor: pointer; vertical-align: middle; margin: auto 0;">
-              <path
-                d="M4 6h2v1h8V6h2v3c0 .55.45 1 1 1s1-.45 1-1V6c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S7 2.34 7 4H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h5c.55 0 1-.45 1-1s-.45-1-1-1H4zm8 7v9c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-9c0-.55-.45-1-1-1h-8c-.55 0-1 .45-1 1m8 8h-6v-1h6zm0-3h-6v-1h6zm0-3h-6v-1h6z" />
-            </svg>
+      <div>
+        <div ref="dropZone" tabindex="0" class="NzSfif" @dragover.prevent @dragenter.prevent @dragleave.prevent
+          @drop.prevent @drop="handleDrop" @dragenter="handleDragEnter" @dragleave="handleDragLeave"
+          @keydown="handleKeyDown">
+          <div class="KoWHpd">
+            <div>
+              <h1 style="text-align: center; font-size: 16px; font-weight: 400; margin-bottom: 14px">3DW Image Search
+              </h1>
+            </div>
+            <div class="NrdQVe">
+              <div class="alTBQe" style="display: none;">
+                <div class="OHzWjb">
+                  <span>Can't upload. Use an image in one of these formats: .jpg, .png, .bmp, .tif, or .webp</span>
+                  <span>Can't upload. Use an image in one of these formats: .jpg, .png, .bmp, or .webp</span>
+                  <span>Can't upload. Use an image smaller than 20MB.</span>
+                  <span>Can't search multiple images. Add one image at a time.</span>
+                  <span>Can't use this link. Check for typos or use another link to try again.</span>
+                  <span>Can't use this link. Check that your link starts with 'http://' or 'https://' to try
+                    again.</span>
+                  <span>Can't use this link. Check for typos or use another link to try again.</span>
+                  <span>Can't search multiple images. Add one image at a time.</span>
+                </div>
+              </div>
+              <div v-if="isDraggingOver === false" class="f6GA0">
+                <div class="BH9rn">
+                  <div class="RaoUUe">
+                    <svg width="59" height="45" viewBox="0 0 59 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M40.3332 13.747L1.58323 13.747L1.58323 43.4553L40.3332 43.4553L40.3332 13.747Z"
+                        class="ArIAXb"></path>
+                      <path d="M40.3332 13.747L17.0832 13.747L17.0832 33.122L40.3332 33.122L40.3332 13.747Z"
+                        class="qOFLsb"></path>
+                      <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M0.614479 12.7783L6.74988 12.7783L6.74988 14.7158L2.55198 14.7158L2.55198 18.9137L0.614479 18.9137L0.614479 12.7783Z"
+                        fill="#BDC1C6"></path>
+                      <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M39.3644 42.4866L39.3644 38.2887L41.3019 38.2887L41.3019 44.4241L35.1665 44.4241L35.1665 42.4866L39.3644 42.4866Z"
+                        fill="#BDC1C6"></path>
+                      <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M0.614479 38.2887L2.55198 38.2887L2.55198 42.4866L6.74987 42.4866L6.74987 44.4241L0.614479 44.4241L0.614479 38.2887Z"
+                        fill="#BDC1C6"></path>
+                      <path d="M19.6665 30.2531H58.4165L58.4165 0.544722H19.6665L19.6665 30.2531Z" fill="#AECBFA">
+                      </path>
+                      <path
+                        d="M19.6665 21.8429L19.6665 30.2525L58.4168 30.2525L58.4168 19.7406L49.6667 12.4069C48.6234 11.5342 47.2931 11.0699 45.9272 11.1018C44.5614 11.1337 43.2547 11.6596 42.2542 12.5801L33.4166 20.7918L28.4166 17.2548C27.7332 16.7781 26.9013 16.5563 26.0684 16.6288C25.2354 16.7012 24.4554 17.0632 23.8666 17.6505L19.6665 21.8429Z"
+                        fill="#669DF6"></path>
+                      <path
+                        d="M30.0056 12.9386C31.7315 12.9386 33.1306 11.5395 33.1306 9.8136C33.1306 8.08773 31.7315 6.68863 30.0056 6.68863C28.2798 6.68863 26.8807 8.08773 26.8807 9.8136C26.8807 11.5395 28.2798 12.9386 30.0056 12.9386Z"
+                        fill="#E8F0FE"></path>
+                    </svg>
+                  </div>
+                  <div class="ZeVBtc">
+                    <span>Drag an image here or </span>
+                    <input id="fileUpload" type="file" multiple style="display: none;" @change="handleFileUpload" />
+                    <span tabindex="0" role="button" class="DV7the">upload a file</span>
+                  </div>
+                </div>
+                <div class="e8Eule" jsname="Awucdb">
+                  <div class="YJx25">
+                    <div class="diOlIe"></div>
+                    <div class="aHK1bd">OR</div>
+                    <div class="diOlIe"></div>
+                  </div>
+                  <div class="PXT6cd">
+                    <input class="cB9M7" placeholder="Paste image link" autocomplete="false" autocorrect="false"
+                      text="text">
+                    <div class="Qwbd3" tabindex="0" role="button">Search</div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="CacfB" @drop="handleDrop">
+                <div class="ZeVBtc" style="text-align: center;">Drop an image here</div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div style="display: flex; align-items: center; width: 100%; gap: 8px;">
-          <div class="bar"></div>
-          <h3 class="or-label">OR</h3>
-          <div class="bar"></div>
-        </div>
-        <div style="display: flex; justify-content: center; width: 100%; margin-top: 16px;">
-          <input v-model="submitInput" type="text" placeholder="Paste URL here"
-            style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 199%;"
-            @keyup.enter="handleSubmit" />
-          <button @click="handleSubmit"
-            style="padding: 8px 16px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; margin-left: 8px; cursor: pointer;">
-            Submit
-          </button>
         </div>
       </div>
 
@@ -228,17 +251,207 @@ watch(images, (_, old) => {
 </template>
 
 <style scoped>
-.bar {
-  border-top: 1px solid rgb(60, 64, 67);
+.NzSfif {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0px 4px 6px rgba(32, 33, 36, 0.28);
+  width: 100%;
+  z-index: 989;
+}
+
+.KoWHpd {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  padding: 20px;
+}
+
+.NrdQVe {
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  background: rgb(248, 249, 250);
+  border: 1px dashed #c0c0c0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 280px;
+}
+
+.alTBQe {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  align-items: center;
+  background-color: rgb(252, 232, 230);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  justify-content: space-between;
+}
+
+.OHzWjb {
+  color-scheme: light;
+  color: rgb(179, 20, 18);
+  flex: 1;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 12px;
+  padding: 5px;
+  text-align: center;
+}
+
+.CacfB {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background: #f0f6ff;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.ZeVBtc {
+  color-scheme: light;
+  color: rgb(95, 99, 104);
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 25px;
+  max-width: 300px;
+  width: 100%;
+}
+
+.DV7the {
+  color-scheme: light;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 25px;
+  color: rgb(25, 103, 210);
+  cursor: pointer;
+  outline: 0;
+}
+
+.f6GA0 {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  height: 100%;
+  justify-content: center;
+  margin-top: 0;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  flex-grow: 1;
+}
+
+.BH9rn {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  align-items: center;
+  display: inline-flex;
+  flex-direction: row;
+  flex-grow: 1;
+  justify-content: normal;
+  padding-top: 16px;
+}
+
+.RaoUUe {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  display: inline-flex;
+  margin-right: 18px;
+}
+
+.e8Eule {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 20px;
+  width: 100%;
+}
+
+.YJx25 {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  align-items: center;
+  display: flex;
+}
+
+.diOlIe {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  border-top: 1px solid rgb(232, 234, 237);
   flex-grow: 1;
   height: 0;
 }
 
-.or-label {
+.aHK1bd {
+  color-scheme: light;
+  color: rgb(95, 99, 104);
   cursor: default;
   flex-shrink: 0;
+  font-family: "Google Sans Display", Roboto, Arial, sans-serif;
   font-size: 14px;
   margin-left: 20px;
   margin-right: 20px;
+}
+
+.PXT6cd {
+  color-scheme: light;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  display: flex;
+  margin-top: 14px;
+}
+
+.cB9M7 {
+  color-scheme: light;
+  background-color: #fff;
+  border: 1px solid rgb(218, 220, 224);
+  color: rgb(60, 64, 67);
+  border-radius: 36px;
+  display: inline-flex;
+  flex-grow: 1;
+  font-size: 14px;
+  font-family: "Google Sans Display", Roboto, Arial, sans-serif;
+  height: 40px;
+  padding: 0 24px;
+  width: 100%;
+  outline: 0;
+}
+
+.Qwbd3 {
+  color-scheme: light;
+  align-items: center;
+  background: #fff;
+  border-radius: 32px;
+  border: 1px solid rgb(218, 220, 224);
+  color: rgb(26, 115, 232);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 14px;
+  justify-content: center;
+  letter-spacing: .25px;
+  margin-left: 8px;
+  padding: 8px 24px;
+  outline: 0;
 }
 </style>
