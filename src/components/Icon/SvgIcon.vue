@@ -16,18 +16,10 @@ export default defineComponent({
       type: String,
       default: 'currentColor',
     },
-    classes: {
-      type: [String, Array, Object],
-      default: '',
-    },
-    styles: {
-      type: Object,
-      default: () => ({}),
-    },
   },
 })
 </script>
 
 <template>
-  <slot />
+  <slot/>
 </template>

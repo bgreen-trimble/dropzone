@@ -1,6 +1,6 @@
-// filepath: src/components/Icon/test_SvgIcon.vue
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { defineComponent } from 'vue'
 import SvgIcon from '../SvgIcon.vue'
 
 describe('SvgIcon.vue', () => {
@@ -9,8 +9,6 @@ describe('SvgIcon.vue', () => {
     expect(wrapper.props('width')).toBe(24)
     expect(wrapper.props('height')).toBe(24)
     expect(wrapper.props('fill')).toBe('currentColor')
-    expect(wrapper.props('classes')).toBe('')
-    expect(wrapper.props('styles')).toEqual({})
   })
 
   it('renders with custom props', () => {
@@ -19,15 +17,11 @@ describe('SvgIcon.vue', () => {
         width: 48,
         height: 48,
         fill: '#000',
-        classes: 'custom-class',
-        styles: { color: 'red' },
       },
     })
     expect(wrapper.props('width')).toBe(48)
     expect(wrapper.props('height')).toBe(48)
     expect(wrapper.props('fill')).toBe('#000')
-    expect(wrapper.props('classes')).toBe('custom-class')
-    expect(wrapper.props('styles')).toEqual({ color: 'red' })
   })
 
   it('renders slot content', () => {
@@ -36,7 +30,29 @@ describe('SvgIcon.vue', () => {
         default: '<svg><circle cx="12" cy="12" r="10" /></svg>',
       },
     })
-    const html = wrapper.html().replace(/>\s+</g, '><') // wrapper may add some spaces between tags
+    const html = wrapper.html({ raw: true })
     expect(html).toContain('<svg><circle cx="12" cy="12" r="10"></circle></svg>')
+  })
+
+  it('renders a component that extends it', () => {
+    const custom = defineComponent({
+      name: 'CustomSvgIcon',
+      extends: SvgIcon, // Inherit from SvgIcon
+      template: `
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          :width="width"
+          :height="height"
+          :fill="fill"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+      `
+    });
+
+    const wrapper = mount(custom)
+    const html = wrapper.html({ raw: true })
+    expect(html).toContain('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle></svg>')
   })
 })
