@@ -3,10 +3,12 @@ import { ref } from 'vue';
 import MicrophoneIcon from '@/components/Icon/MicrophoneIcon.vue';
 import SearchIcon from '@/components/Icon/SearchIcon.vue';
 import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
+import VoiceCapture from '@/components/speak/VoiceCapture.vue'
 
 const searchQuery = ref('');
 const showDropdown = ref(false);
 const showImageSearch = ref(false);
+const showVoiceSearch = ref(false);
 const suggestions = ref(['example search 1', 'example search 2', 'example search 3']);
 
 const handleBlur = () => {
@@ -29,6 +31,7 @@ const performSearch = () => {
 
 const startVoiceSearch = () => {
   console.log('Starting voice search');
+  showVoiceSearch.value = true;
   // Implement voice search functionality here
 };
 
@@ -62,6 +65,11 @@ const startImageSearch = () => {
             <ImageAddIcon />
           </span>
         </button>
+      </div>
+      <div class="overlay" v-if="showVoiceSearch">
+        <div class="image-search-modal">
+          <VoiceCapture/>
+        </div>
       </div>
       <div class="overlay" v-if="showImageSearch">
         <div class="image-search-modal">
