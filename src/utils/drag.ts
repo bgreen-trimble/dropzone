@@ -23,8 +23,8 @@ export const fromDropEvent = (event: DragEvent): TransferItem[] => {
   return transferItems
 }
 
-export const fromDropEventX = (event: DragEvent): Record<string, Blob | FileList> => {
-  const transfer: SearchQuery = {};
+export const fromDropEventX = (event: DragEvent): SearchQuery => {
+  const query: SearchQuery = [];
 
   const { dataTransfer } = event;
   console.log('dataTransfer', dataTransfer)
@@ -37,19 +37,18 @@ export const fromDropEventX = (event: DragEvent): Record<string, Blob | FileList
       for (let i = 0; i < types.length; i++) {
         const type = types[i];
         console.log('type', type)
-
         if (type === 'Files') {
-          transfer[type] = dataTransfer.files;
+          Array.from(dataTransfer.files).forEach((file) => query.push(file));
         } else {
           const data = dataTransfer.getData(type);
           console.log('data', data)
-          transfer[type] = new Blob([data], { type });
+          query.push(new Blob([data], { type }));
         }
       }
     }
   }
 
-  console.log('transfer', transfer)
-  return transfer
+  console.log('fromDropEventX', query)
+  return query
 }
 

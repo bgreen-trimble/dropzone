@@ -24,8 +24,21 @@ export type TransferImage = {
   data: string // URL
 }
 
-export const isImageMimeType = (type: string) => {
-  return type.match(/^image\/(jpeg|jpg|gif|png|webp)$/) !== null
-}
-
-export type SearchQuery = Record<string, Blob | FileList>
+/**
+ * Represents a search query that is an array of Blob of which some Blobs may be a File.
+ *
+ * There are various ways to create a search query:
+ * - Drag and drop
+ * - Copy and paste
+ * - Uploading a file
+ * - Inputting a string
+ *
+ * Each way can result in one or more types. Some types can be a string and others a Blob
+ * For example, a search query can contain a string and an image.
+ * The string can be a URL or a base64 data URL.
+ * The image can be a base64 data URL or a regular URL including one created using URL:createObjectURL().
+ * The image can also be a File object.
+ *
+ *
+ */
+export type SearchQuery = Array<Blob>

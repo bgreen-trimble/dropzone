@@ -151,8 +151,10 @@ watch(images, (_, old) => {
               </div>
               <div class="ZeVBtc">
                 <span>Drag an image here or </span>
-                <input id="fileUpload" type="file" multiple style="display: none;" @change="handleFileUpload" />
-                <span tabindex="0" role="button" class="DV7the">upload a file</span>
+                <label for="fileUpload">
+                  <input  ref="fileInput" id="fileUpload" type="file" name="" multiple style="display: none;" @change="handleFileUpload" />
+                  <span tabindex="0" role="button" class="DV7the">upload a file</span>
+                </label>
               </div>
             </div>
             <div class="e8Eule" jsname="Awucdb">

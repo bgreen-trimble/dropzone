@@ -1,3 +1,8 @@
+
+export const isImageMimeType = (type: string) => type.match(/^image\//) !== null
+export const isTextMimeType = (type: string) => type.match(/^text\//) !== null
+
+
 export const isImageName = (name: string) => {
   const url = new URL(name)
   return url.pathname.match(/\.(jpeg|jpg|gif|png|webp)/) !== null
@@ -9,7 +14,7 @@ export const isUrl = (url: string) => {
 
 /**
  * Checks if the provided string is both a valid URL and represents an image file.
- * 
+ *
  * @param url - The string to check if it's an image URL
  * @returns True if the string is both a valid URL and an image file name, false otherwise
  * @see isUrl

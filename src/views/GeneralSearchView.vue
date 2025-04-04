@@ -13,8 +13,8 @@ const showDropdown = ref(false);
 const showImageSearch = ref(false);
 const showVoiceSearch = ref(false);
 const suggestions = ref(['example search 1', 'example search 2', 'example search 3']);
-const searchQuery = ref<SearchQuery>({});
-const stringifiedQuery = ref('');
+const searchQuery = ref<SearchQuery>();
+const stringifiedQuery = ref();
 
 const handleBlur = () => {
   // Delay hiding dropdown to allow click events on suggestions
@@ -62,6 +62,7 @@ const handleImageSearch = (query: SearchQuery) => {
   searchQuery.value = query;
   if (query) {
     stringify(query).then((text) => {
+      console.log('Stringified query:', text);
       stringifiedQuery.value = text;
       performSearch();
     });

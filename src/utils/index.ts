@@ -1,4 +1,5 @@
-export { isImageMimeType, type TransferItem, type TransferImage } from './types'
-export { fromDropEvent } from './drag'
-export { fromClipboard } from './clipboard'
+export { type TransferItem, type TransferImage } from './types'
+export { fromDropEvent, fromDropEventX } from './drag'
+export { fromClipboard, fromClipboardX } from './clipboard'
 export { fromTransfer } from './image'
+export { isImageMimeType, isTextMimeType, isImageData, isImageName, isImageUrl, isUrl } from './helpers'

@@ -1,4 +1,4 @@
-import { isImageMimeType, type TransferItem } from './types'
+import { isImageMimeType, type TransferItem } from '.'
 
 const getClipboardItemText = (blob: Blob) => {
   console.log('blob', blob)
@@ -54,3 +54,18 @@ export const fromClipboard = (): Promise<TransferItem[]> => {
     throw error
   })
 }
+
+
+const fromClipboardItems = (clipboardItems: ClipboardItem[]) => {
+  // Map each clipboard item to an array of blobs (one for each type)
+  const blobArrays = Promise.all(
+    Array.from(clipboardItems).map(async (clipboardItem) =>
+      Promise.all(clipboardItem.types.map((type) => clipboardItem.getType(type)))));
+
+  // Flatten the array of arrays into a single array of blobs
+  return blobArrays.then((arrays) => arrays.flat())
+}
+
+export const fromClipboardX = (): Promise<Blob[]> =>
+  navigator.clipboard.read()
+    .then((clipboardItems) => fromClipboardItems(clipboardItems))

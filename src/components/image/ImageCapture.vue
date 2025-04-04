@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { SearchQuery } from '@/utils/types';
-import { fromDropEventX } from '@/utils/drag';
+import { fromClipboardX, fromDropEventX } from '@/utils';
 import CloseIcon from '@/components/Icon/CloseIcon.vue';
 import DropIcon from '@/components/Icon/DropIcon.vue';
 
@@ -26,7 +26,13 @@ const handleKeyDown = (event: KeyboardEvent) => {
   if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
     // Ctrl+V or Cmd+V is pressed
     console.log('Paste event detected!');
-    close()
+    isOverDropZone.value = false
+    fromClipboardX().then((query) => {
+      console.log('Query from clipboard:', query)
+      emit('query', query)
+    }).catch((error) => {
+      console.error('Error processing clipboard data:', error)
+    })
   }
 }
 
@@ -52,7 +58,7 @@ const handleDrop = (event: DragEvent) => {
 
 const handleSubmit = () => {
   console.log('Search button clicked with query:', searchInput.value)
-  const query = { 'text/plain': new Blob([searchInput.value], { type: 'text/plain' }) }
+  const query = [new Blob([searchInput.value], { type: 'text/plain' })]
   emit('query', query)
 }
 
@@ -61,7 +67,8 @@ const handleFileUpload = (event: Event) => {
   if (input.files && input.files.length > 0) {
     const file = input.files[0];
     console.log('File selected:', file);
-    // Handle the file upload logic here
+    const query = [file]
+    emit('query', query)
   }
 }
 // lifecycle hooks
@@ -71,18 +78,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="image-capture-container"  @dropenter.prevent @dragover.prevent
-  @dragenter="handleDragEnter" @dragleave="handleDragLeave" @drop="handleDrop">
+  <div class="image-capture-container" @dropenter.prevent @dragover.prevent @dragenter="handleDragEnter"
+    @dragleave="handleDragLeave" @drop="handleDrop">
     <div class="image-capture-header">
       <div style=" flex-grow: 1; text-align: center; font-size: 16px; font-weight: 400;">3DW Image Search</div>
       <CloseIcon @click="close" style="cursor: pointer; margin-left: auto; padding: 10px" />
     </div>
     <div v-if="!isOverDropZone" class="image-capture-body">
-      <div tabindex="0" style="display: flex; justify-content: center; align-items: center; height: 140px; width: 100%" @keydown="handleKeyDown">
+      <div style="display: flex; justify-content: center; align-items: center; height: 140px; width: 100%"
+        @keydown="handleKeyDown">
         <DropIcon style="padding-right: 10px" />
         <span>Drag an image here or&nbsp;</span>
-        <input id="fileUpload" type="file" multiple style="display: none;" @change="handleFileUpload" />
-        <span tabindex="0" role="button" class="update-button">upload a file</span>
+        <label for="fileUpload">
+          <input id="fileUpload" type="file" multiple style="display: none;" @change="handleFileUpload" />
+          <span tabindex="0" role="button" class="update-button">upload a file</span>
+        </label>
       </div>
       <div style="display: flex; flex-direction: column; width: 100%;">
         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 10px;">

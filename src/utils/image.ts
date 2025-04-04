@@ -10,7 +10,7 @@
  * "fromTransfer" uses the "from", functions to extract image data from the corresponding types.
  */
 
-import { isImageMimeType, type TransferImage, type TransferItem } from './types'
+import { isImageMimeType, type TransferImage, type TransferItem } from '.'
 import { isImageUrl, isImageData } from './helpers'
 
 /**
