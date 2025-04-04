@@ -17,7 +17,6 @@ const searchInput = ref('')
 // functions
 const close = () => {
   console.log('Close button clicked')
-  // Add your close logic here
   emit('close')
 
 }
@@ -26,9 +25,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
   console.log('handleKeyDown', event)
   if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
     // Ctrl+V or Cmd+V is pressed
-    // Your code to handle the paste event goes here
     console.log('Paste event detected!');
-
     close()
   }
 }

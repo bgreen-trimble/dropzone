@@ -6,6 +6,7 @@ import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
 import SpeechCapture from '@/components/speech/SpeechCapture.vue'
 import ImageCapture from '@/components/image/ImageCapture.vue'
 import type { SearchQuery } from '@/utils/types';
+import { stringify } from '@/utils/query';
 
 const searchInput = ref('');
 const showDropdown = ref(false);
@@ -13,6 +14,7 @@ const showImageSearch = ref(false);
 const showVoiceSearch = ref(false);
 const suggestions = ref(['example search 1', 'example search 2', 'example search 3']);
 const searchQuery = ref<SearchQuery>({});
+const stringifiedQuery = ref('');
 
 const handleBlur = () => {
   // Delay hiding dropdown to allow click events on suggestions
@@ -59,17 +61,9 @@ const handleImageSearch = (query: SearchQuery) => {
   console.log('Image search result:', query);
   searchQuery.value = query;
   if (query) {
-    Object.keys(query).forEach((key) => {
-      if (query[key] instanceof Blob) {
-        const blob = query[key] as Blob;
-        console.log(key, blob);
-      } else if (query[key] instanceof FileList) {
-        const fileList = query[key] as FileList;
-        if (fileList && fileList.length > 0) {
-          const file = fileList[0];
-          console.log(key, file);
-        }
-      }
+    stringify(query).then((text) => {
+      stringifiedQuery.value = text;
+      performSearch();
     });
   }
   showImageSearch.value = false;
@@ -129,12 +123,11 @@ const handleDragStart = (event: DragEvent) => {
       <p>Search for anything you want!</p>
       <div v-if="searchQuery">
         <h2>Search Results:</h2>
-        <div v-for="(value, key) in searchQuery" :key="key">
-          <pre>{{`${key}: ${async () => await (value as Blob).text()}`}}</pre>
-        </div>
+        <pre>{{ stringifiedQuery }}</pre>
       </div>
-      <img src="/living-room.jpg" alt="Living Room" style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
     </div>
+    <img src="/living-room.jpg" alt="Living Room"
+      style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
   </div>
 </template>
 
