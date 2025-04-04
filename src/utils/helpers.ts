@@ -7,6 +7,14 @@ export const isUrl = (url: string) => {
   return url.match(/^(https?:\/\/[^\s]+)$/) !== null
 }
 
+/**
+ * Checks if the provided string is both a valid URL and represents an image file.
+ * 
+ * @param url - The string to check if it's an image URL
+ * @returns True if the string is both a valid URL and an image file name, false otherwise
+ * @see isUrl
+ * @see isImageName
+ */
 export const isImageUrl = (url: string) => {
   return isUrl(url) && isImageName(url)
 }

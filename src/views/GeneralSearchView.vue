@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import MicrophoneIcon from '@/components/Icon/MicrophoneIcon.vue';
 import SearchIcon from '@/components/Icon/SearchIcon.vue';
 import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
-import VoiceCapture from '@/components/speak/VoiceCapture.vue'
+import SpeechCapture from '@/components/speech/SpeechCapture.vue'
 
 const searchQuery = ref('');
 const showDropdown = ref(false);
@@ -40,6 +40,19 @@ const startImageSearch = () => {
   // Implement image search functionality here
   showImageSearch.value = true;
 };
+
+const handleVoiceSearch = (blob?: Blob) => {
+  console.log('Voice search result:', blob);
+  if (blob) {
+    blob.text().then((text) => {
+    searchQuery.value = text;
+    performSearch();
+  });
+  }
+  showVoiceSearch.value = false;
+
+  // Implement functionality to handle voice search result
+};
 </script>
 
 <template>
@@ -68,7 +81,7 @@ const startImageSearch = () => {
       </div>
       <div class="overlay" v-if="showVoiceSearch">
         <div class="image-search-modal">
-          <VoiceCapture/>
+            <SpeechCapture @stopped="handleVoiceSearch" />
         </div>
       </div>
       <div class="overlay" v-if="showImageSearch">
