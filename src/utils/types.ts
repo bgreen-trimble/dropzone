@@ -28,3 +28,4 @@ export const isImageMimeType = (type: string) => {
   return type.match(/^image\/(jpeg|jpg|gif|png|webp)$/) !== null
 }
 
+export type SearchQuery = Record<string, Blob | FileList>

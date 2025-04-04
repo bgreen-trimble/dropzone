@@ -4,12 +4,15 @@ import MicrophoneIcon from '@/components/Icon/MicrophoneIcon.vue';
 import SearchIcon from '@/components/Icon/SearchIcon.vue';
 import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
 import SpeechCapture from '@/components/speech/SpeechCapture.vue'
+import ImageCapture from '@/components/image/ImageCapture.vue'
+import type { SearchQuery } from '@/utils/types';
 
-const searchQuery = ref('');
+const searchInput = ref('');
 const showDropdown = ref(false);
 const showImageSearch = ref(false);
 const showVoiceSearch = ref(false);
 const suggestions = ref(['example search 1', 'example search 2', 'example search 3']);
+const searchQuery = ref<SearchQuery>({});
 
 const handleBlur = () => {
   // Delay hiding dropdown to allow click events on suggestions
@@ -19,13 +22,13 @@ const handleBlur = () => {
 };
 
 const selectSuggestion = (suggestion: string) => {
-  searchQuery.value = suggestion;
+  searchInput.value = suggestion;
   showDropdown.value = false;
   performSearch();
 };
 
 const performSearch = () => {
-  console.log('Searching for:', searchQuery.value);
+  console.log('Searching for:', searchInput.value);
   // Implement actual search functionality here
 };
 
@@ -45,19 +48,41 @@ const handleVoiceSearch = (blob?: Blob) => {
   console.log('Voice search result:', blob);
   if (blob) {
     blob.text().then((text) => {
-    searchQuery.value = text;
-    performSearch();
-  });
+      searchInput.value = text;
+      performSearch();
+    });
   }
   showVoiceSearch.value = false;
+};
 
-  // Implement functionality to handle voice search result
+const handleImageSearch = (query: SearchQuery) => {
+  console.log('Image search result:', query);
+  searchQuery.value = query;
+  if (query) {
+    Object.keys(query).forEach((key) => {
+      if (query[key] instanceof Blob) {
+        const blob = query[key] as Blob;
+        console.log(key, blob);
+      } else if (query[key] instanceof FileList) {
+        const fileList = query[key] as FileList;
+        if (fileList && fileList.length > 0) {
+          const file = fileList[0];
+          console.log(key, file);
+        }
+      }
+    });
+  }
+  showImageSearch.value = false;
+};
+
+const handleDragStart = (event: DragEvent) => {
+  console.log('Drag started', event);
+  showImageSearch.value = true;
 };
 </script>
 
 <template>
-  <div>
-
+  <div @dragstart="handleDragStart">
     <div class="search-container">
       <div class="search-bar">
         <button class="search-button" @click="performSearch">
@@ -65,7 +90,7 @@ const handleVoiceSearch = (blob?: Blob) => {
             <SearchIcon />
           </span>
         </button>
-        <input type="text" v-model="searchQuery" @focus="showDropdown = true" @blur="handleBlur" placeholder="Search..."
+        <input type="text" v-model="searchInput" @focus="showDropdown = true" @blur="handleBlur" placeholder="Search..."
           class="search-input" />
         <button class="search-button" @click="startVoiceSearch">
           <span class="search-icon">
@@ -81,14 +106,13 @@ const handleVoiceSearch = (blob?: Blob) => {
       </div>
       <div class="overlay" v-if="showVoiceSearch">
         <div class="image-search-modal">
-            <SpeechCapture @stopped="handleVoiceSearch" />
+          <SpeechCapture @stopped="handleVoiceSearch" />
         </div>
       </div>
       <div class="overlay" v-if="showImageSearch">
         <div class="image-search-modal">
-          <h2>Image Search</h2>
-          <button @click="showImageSearch = false">Close</button>
           <!-- Image search functionality goes here -->
+          <ImageCapture @close="showImageSearch = false" @query="handleImageSearch" />
         </div>
       </div>
       <div class="search-dropdown" v-if="showDropdown">
@@ -103,6 +127,13 @@ const handleVoiceSearch = (blob?: Blob) => {
     <div>
       <h1>General Search</h1>
       <p>Search for anything you want!</p>
+      <div v-if="searchQuery">
+        <h2>Search Results:</h2>
+        <div v-for="(value, key) in searchQuery" :key="key">
+          <pre>{{`${key}: ${async () => await (value as Blob).text()}`}}</pre>
+        </div>
+      </div>
+      <img src="/living-room.jpg" alt="Living Room" style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
     </div>
   </div>
 </template>
