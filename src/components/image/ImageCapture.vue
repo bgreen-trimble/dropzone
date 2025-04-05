@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import type { SearchQuery } from '@/utils/types';
 import { fromClipboardX, fromDropEventX } from '@/utils';
-import CloseIcon from '@/components/Icon/CloseIcon.vue';
-import DropIcon from '@/components/Icon/DropIcon.vue';
+import CloseIcon from '@/components/icon/CloseIcon.vue';
+import DropIcon from '@/components/icon/DropIcon.vue';
 
 // Events declaration
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'query', query: SearchQuery): void;
+  (e: 'query', query: Blob[]): void;
 }>();
 
 const isOverDropZone = ref(false)
@@ -84,8 +83,9 @@ onMounted(() => {
       <div style=" flex-grow: 1; text-align: center; font-size: 16px; font-weight: 400;">3DW Image Search</div>
       <CloseIcon @click="close" style="cursor: pointer; margin-left: auto; padding: 10px" />
     </div>
+    <!-- this appear when there is nothing dragged over the drop zone -->
     <div v-if="!isOverDropZone" class="image-capture-body">
-      <div style="display: flex; justify-content: center; align-items: center; height: 140px; width: 100%"
+      <div tabindex="0" style="display: flex; justify-content: center; align-items: center; height: 140px; width: 100%"
         @keydown="handleKeyDown">
         <DropIcon style="padding-right: 10px" />
         <span>Drag an image here or&nbsp;</span>
@@ -109,6 +109,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    <!-- this pops up when a drag enters the drop zone -->
     <div v-else class="image-capture-body" style="background: #f0f6ff;">
       <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
         <span>Drop image here</span>

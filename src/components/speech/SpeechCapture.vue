@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useSpeechRecognition } from '@/composables/useSpeechRecognition'
-import CloseIcon from '@/components/Icon/CloseIcon.vue';
+import CloseIcon from '@/components/icon/CloseIcon.vue';
 
 const { isListening, isSupported, stop, result, start, error } = useSpeechRecognition({
   lang: 'en-US',

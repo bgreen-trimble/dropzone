@@ -1,4 +1,4 @@
-import type { SearchQuery } from "./types";
+import type { Query } from "./types";
 
 const stringifyBlob = (blob: Blob) => {
   const { type } = blob
@@ -27,7 +27,7 @@ const stringifyBlob = (blob: Blob) => {
   }
 };
 
-export const stringify = (query: SearchQuery) => {
+export const stringify = (query: Query) => {
   const values = Object.values(query)
   console.log("values", values)
 

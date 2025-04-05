@@ -1,20 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import MicrophoneIcon from '@/components/Icon/MicrophoneIcon.vue';
-import SearchIcon from '@/components/Icon/SearchIcon.vue';
-import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
+import { onUnmounted, ref, watch } from 'vue';
+import { search } from '@/api/warehouse';
+import type { Crop, Query } from '@/utils/types';
+import { stringify } from '@/utils/query';
+import MicrophoneIcon from '@/components/icon/MicrophoneIcon.vue';
+import SearchIcon from '@/components/icon/SearchIcon.vue';
+import ImageAddIcon from '@/components/icon/ImageAddIcon.vue';
+import CloseIcon from '@/components/icon/CloseIcon.vue'
 import SpeechCapture from '@/components/speech/SpeechCapture.vue'
 import ImageCapture from '@/components/image/ImageCapture.vue'
-import type { SearchQuery } from '@/utils/types';
-import { stringify } from '@/utils/query';
+import ImageCropper from '@/components/image/ImageCropper.vue'
 
-const searchInput = ref('');
+const query = ref<Query>();
+const original = ref<Blob>();
+const crop = ref<Crop>();
+const thumbnail = ref<string>();
+const searchInput = ref<string>();
 const showDropdown = ref(false);
 const showImageSearch = ref(false);
 const showVoiceSearch = ref(false);
+const showImageCropper = ref(false);
 const suggestions = ref(['example search 1', 'example search 2', 'example search 3']);
-const searchQuery = ref<SearchQuery>();
 const stringifiedQuery = ref();
+const searchResults = ref<string[]>();
 
 const handleBlur = () => {
   // Delay hiding dropdown to allow click events on suggestions
@@ -26,12 +34,15 @@ const handleBlur = () => {
 const selectSuggestion = (suggestion: string) => {
   searchInput.value = suggestion;
   showDropdown.value = false;
-  performSearch();
 };
 
 const performSearch = () => {
-  console.log('Searching for:', searchInput.value);
-  // Implement actual search functionality here
+  console.log('Searching for:', query.value);
+  if (query.value) {
+    search(query.value).then((results) => {
+      searchResults.value = results;
+    });
+  }
 };
 
 const startVoiceSearch = () => {
@@ -46,47 +57,138 @@ const startImageSearch = () => {
   showImageSearch.value = true;
 };
 
-const handleVoiceSearch = (blob?: Blob) => {
-  console.log('Voice search result:', blob);
-  if (blob) {
-    blob.text().then((text) => {
-      searchInput.value = text;
-      performSearch();
-    });
+const handleInputSearch = () => {
+  console.log('Input search:', searchInput.value);
+  if (searchInput.value) {
+    const textBlob = new Blob([searchInput.value], { type: 'text/plain' });
+
+    // If query already exists, replace any text blob with the new one
+    const clean = query.value ? query.value.filter(blob => blob.type !== 'text/plain') : [];
+    query.value = [...clean, textBlob];
+  }
+
+  showDropdown.value = false;
+};
+
+const handleVoiceSearch = (result?: Blob) => {
+  console.log('Voice search result:', result);
+  if (result) {
+    const textBlob = new Blob([result], { type: 'text/plain' });
+
+    // If query already exists, replace any text blob with the new one
+    const clean = query.value ? query.value.filter(blob => blob.type !== 'text/plain') : [];
+    query.value = [...clean, textBlob];
   }
   showVoiceSearch.value = false;
 };
 
-const handleImageSearch = (query: SearchQuery) => {
-  console.log('Image search result:', query);
-  searchQuery.value = query;
-  if (query) {
-    stringify(query).then((text) => {
-      console.log('Stringified query:', text);
-      stringifiedQuery.value = text;
-      performSearch();
+const handleImageSearch = (result: Query) => {
+  console.log('Image search result:', result);
+  if (result) {
+    stringify(result).then((items) => {
+      console.log('Stringified query:', result);
+      stringifiedQuery.value = items;
     });
+
+    // Find the first blob with an image type in the result array
+    const imageBlob = result.find(blob => blob.type.startsWith('image/'));
+
+    if (imageBlob) {
+      query.value = [imageBlob];
+    }
   }
   showImageSearch.value = false;
+};
+
+const handleCropSearch = () => {
+  console.log('Starting crop search');
+  showImageCropper.value = true;
+};
+
+const handleImageCropped = (value: Crop) => {
+  console.log('Image cropped:', value);
+  if (value) {
+    crop.value = value;
+  }
+};
+
+const handleClearSearch = () => {
+  console.log('Clearing search');
+  searchInput.value = undefined;
+  query.value = undefined;
+  original.value = undefined;
+  crop.value = undefined;
+  thumbnail.value = undefined;
+  searchResults.value = undefined;
 };
 
 const handleDragStart = (event: DragEvent) => {
   console.log('Drag started', event);
   showImageSearch.value = true;
 };
+
+watch(query, (value) => {
+  if (value) {
+    if (searchInput.value) {
+      searchInput.value = undefined;
+    }
+    if (original.value) {
+      original.value = undefined;
+    }
+    if (crop.value) {
+      crop.value = undefined;
+    }
+    if (thumbnail.value) {
+      URL.revokeObjectURL(thumbnail.value);
+      thumbnail.value = undefined;
+    }
+
+    const imageBlob = value.find(blob => blob.type.startsWith('image/'));
+    if (imageBlob) {
+      original.value = imageBlob;
+      thumbnail.value = URL.createObjectURL(imageBlob);
+    }
+
+    const textBlob = value.find(blob => blob.type.startsWith('text/plain'));
+    if (textBlob) {
+      textBlob.text().then((text) => {
+        console.log('Text from blob:', text);
+        searchInput.value = text;
+      });
+    }
+
+    performSearch();
+  }
+});
+
+onUnmounted(() => {
+  if (thumbnail.value) {
+    URL.revokeObjectURL(thumbnail.value);
+  }
+});
 </script>
 
 <template>
   <div @dragstart="handleDragStart">
     <div class="search-container">
       <div class="search-bar">
-        <button class="search-button" @click="performSearch">
+        <button class="search-button" @click="handleInputSearch">
           <span class="search-icon">
             <SearchIcon />
           </span>
         </button>
+        <button v-if="thumbnail" class="search-button" @click="handleCropSearch">
+          <span class="search-icon">
+            <img :src="thumbnail" alt="Thumbnail" style="width: 24px; height: 24px; border-radius: 20%;" />
+          </span>
+        </button>
         <input type="text" v-model="searchInput" @focus="showDropdown = true" @blur="handleBlur" placeholder="Search..."
           class="search-input" />
+        <button v-if="thumbnail || searchInput" class="search-button" @click="handleClearSearch()" style="border-right: 1px solid lightgray;">
+          <span class="search-icon">
+            <CloseIcon/>
+          </span>
+        </button>
         <button class="search-button" @click="startVoiceSearch">
           <span class="search-icon">
             <MicrophoneIcon />
@@ -107,7 +209,13 @@ const handleDragStart = (event: DragEvent) => {
       <div class="overlay" v-if="showImageSearch">
         <div class="image-search-modal">
           <!-- Image search functionality goes here -->
-          <ImageCapture @close="showImageSearch = false" @query="handleImageSearch" />
+          <ImageCapture @close="showImageSearch = false" :query="query" @query="handleImageSearch" />
+        </div>
+      </div>
+      <div class="overlay" v-if="showImageCropper && original">
+        <div class="image-search-modal">
+          <!-- Image search functionality goes here -->
+          <ImageCropper @close="showImageCropper = false" @cropped="handleImageCropped" :blob="original" :crop="crop"/>
         </div>
       </div>
       <div class="search-dropdown" v-if="showDropdown">
@@ -122,13 +230,24 @@ const handleDragStart = (event: DragEvent) => {
     <div>
       <h1>General Search</h1>
       <p>Search for anything you want!</p>
-      <div v-if="searchQuery">
-        <h2>Search Results:</h2>
+      <div v-if="query">
+        <h2>Image Search Results:</h2>
         <pre>{{ stringifiedQuery }}</pre>
       </div>
     </div>
     <img src="/living-room.jpg" alt="Living Room"
       style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
+
+    <div v-if="searchResults">
+      <h2>Search Results:</h2>
+      <div style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
+        <div v-for="(result, index) in searchResults" :key="index" style="display: flex 1">
+          <!-- Assuming result is a URL to an image -->
+          <img :src="result" alt="Search Result"
+            style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -208,5 +327,13 @@ const handleDragStart = (event: DragEvent) => {
 
 .search-icon {
   color: #5f6368;
+}
+
+.vertical-bar {
+  font-size: 14px;
+  color: lightgray;
+  border-left: 1px solid rgba(248, 249, 250, 0.25);
+  height: 65%;
+  display: block;
 }
 </style>

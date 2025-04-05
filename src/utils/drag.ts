@@ -1,4 +1,4 @@
-import { type SearchQuery, type TransferItem } from './types'
+import { type TransferItem } from './types'
 
 /*
   * This function extracts the data from the DragEvent's dataTransfer object,
@@ -23,8 +23,8 @@ export const fromDropEvent = (event: DragEvent): TransferItem[] => {
   return transferItems
 }
 
-export const fromDropEventX = (event: DragEvent): SearchQuery => {
-  const query: SearchQuery = [];
+export const fromDropEventX = (event: DragEvent): Blob[] => {
+  const query: Blob[] = [];
 
   const { dataTransfer } = event;
   console.log('dataTransfer', dataTransfer)
