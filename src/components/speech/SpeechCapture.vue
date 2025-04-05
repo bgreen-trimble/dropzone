@@ -12,7 +12,7 @@ const { isListening, isSupported, stop, result, start, error } = useSpeechRecogn
 // Events declaration
 const emit = defineEmits<{
   (e: 'started'): void;
-  (e: 'stopped', blob?: Blob): void;
+  (e: 'submit', text?: string): void;
   (e: 'error', error: Error): void;
 }>();
 
@@ -22,7 +22,7 @@ watch(isListening, (value) => {
   console.log('Listening state changed:', value);
   if (!value) {
     stop();
-    emit('stopped', new Blob([result.value], { type: 'text/plain' }));
+    emit('submit', result.value);
   } else {
     isRecognizing.value = true;
   }
