@@ -1,46 +1,52 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import type { Crop } from '@/utils/types';
+import { ref, onMounted } from 'vue'
 import CloseIcon from '@/components/icon/CloseIcon.vue';
-import { Cropper, Preview } from "vue-advanced-cropper";
+import { Cropper, type CropperResult, type Coordinates } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
-
-type ChangeEvent = {
-  coordinates: {
-    width: number,
-    height: number,
-    left: number,
-    top: number
-  }
-};
 
 const props = defineProps<{
   blob: Blob;
-  crop?: Crop;
+  crop?: Coordinates;
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'cropped', crop: Crop): void;
+  (e: 'cropped', event: CropperResult): void;
 }>();
 
 const src = ref<string>();
-const cropper = ref<string>();
 const ignoreChange = ref(true);
+const position = ref<{
+  left: number,
+  top: number
+}>();
+const size = ref<{
+  width: number,
+  height: number
+}>();
+
+if (props.crop) {
+    position.value = {
+      left: props.crop.left,
+      top: props.crop.top
+    }
+    size.value = {
+      width: props.crop.width,
+      height: props.crop.height
+    }
+  }
 
 const close = () => {
   console.log('Close button clicked')
   emit('close')
 }
 
-const change = (event: ChangeEvent) => {
+const change = (event: CropperResult) => {
   console.log('Cropper change event', event)
   if (ignoreChange.value) {
     ignoreChange.value = false
   } else {
-    const { coordinates } = event;
-    const crop: Crop = coordinates;
-    emit('cropped', crop);
+    emit('cropped', event);
   }
 }
 
@@ -60,15 +66,8 @@ onMounted(() => {
       <CloseIcon @click="close" style="cursor: pointer; margin-left: auto; padding: 10px" />
     </div>
     <div class="image-cropper-body">
-      <h3>{{ crop }}</h3>
-      <Cropper ref="cropper" class="cropper" :src="src" :default-position="{
-        width: props.crop?.width || 400,
-        height: props.crop?.height || 400,
-      }" :default-size="{
-        left: props.crop?.left || 0,
-        top: props.crop?.top || 0,
-      }" @change="change" />
-      <Preview ref="preview" class="preview" />
+      <Cropper v-if="position && size" class="cropper" :src="src" :default-position="position" :default-size="size" @change="change" />
+      <Cropper v-else class="cropper" :src="src" @change="change" />
     </div>
   </div>
 </template>

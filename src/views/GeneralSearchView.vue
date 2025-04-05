@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onUnmounted, ref, watch } from 'vue';
+import type { CropperResult, Coordinates } from "vue-advanced-cropper";
 import { search } from '@/api/warehouse';
-import type { Crop, Query } from '@/utils/types';
+import type { Query } from '@/utils/types';
 import { stringify } from '@/utils/query';
 import MicrophoneIcon from '@/components/icon/MicrophoneIcon.vue';
 import SearchIcon from '@/components/icon/SearchIcon.vue';
@@ -13,7 +14,7 @@ import ImageCropper from '@/components/image/ImageCropper.vue'
 
 const query = ref<Query>();
 const original = ref<Blob>();
-const crop = ref<Crop>();
+const crop = ref<Coordinates>();
 const thumbnail = ref<string>();
 const searchInput = ref<string>();
 const showDropdown = ref(false);
@@ -105,10 +106,29 @@ const handleCropSearch = () => {
   showImageCropper.value = true;
 };
 
-const handleImageCropped = (value: Crop) => {
-  console.log('Image cropped:', value);
-  if (value) {
-    crop.value = value;
+const handleImageCropped = (event: CropperResult) => {
+  console.log('Image cropped:', event);
+  if (event) {
+    const { coordinates, canvas: original} = event;
+    crop.value = coordinates;
+    if (original) {
+      const { width, height } = coordinates;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      // var canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(original, 0, 0, width, height);
+        if (thumbnail.value) {
+          URL.revokeObjectURL(thumbnail.value);
+        }
+        // Create a new object URL for the cropped image
+        thumbnail.value = canvas.toDataURL("image/webp");
+      }
+    }
   }
 };
 
@@ -147,6 +167,7 @@ watch(query, (value) => {
     if (imageBlob) {
       original.value = imageBlob;
       thumbnail.value = URL.createObjectURL(imageBlob);
+      showImageCropper.value = true;
     }
 
     const textBlob = value.find(blob => blob.type.startsWith('text/plain'));
@@ -184,9 +205,10 @@ onUnmounted(() => {
         </button>
         <input type="text" v-model="searchInput" @focus="showDropdown = true" @blur="handleBlur" placeholder="Search..."
           class="search-input" />
-        <button v-if="thumbnail || searchInput" class="search-button" @click="handleClearSearch()" style="border-right: 1px solid lightgray;">
+        <button v-if="thumbnail || searchInput" class="search-button" @click="handleClearSearch()"
+          style="border-right: 1px solid lightgray;">
           <span class="search-icon">
-            <CloseIcon/>
+            <CloseIcon />
           </span>
         </button>
         <button class="search-button" @click="startVoiceSearch">
@@ -215,7 +237,7 @@ onUnmounted(() => {
       <div class="overlay" v-if="showImageCropper && original">
         <div class="image-search-modal">
           <!-- Image search functionality goes here -->
-          <ImageCropper @close="showImageCropper = false" @cropped="handleImageCropped" :blob="original" :crop="crop"/>
+          <ImageCropper @close="showImageCropper = false" @cropped="handleImageCropped" :blob="original" :crop="crop" />
         </div>
       </div>
       <div class="search-dropdown" v-if="showDropdown">
@@ -228,14 +250,13 @@ onUnmounted(() => {
     </div>
 
     <div>
-      <h1>General Search</h1>
-      <p>Search for anything you want!</p>
       <div v-if="query">
         <h2>Image Search Results:</h2>
         <pre>{{ stringifiedQuery }}</pre>
       </div>
     </div>
-    <img src="/living-room.jpg" alt="Living Room"
+    <h2>Thumbnail:</h2>
+    <img :src="thumbnail"
       style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
 
     <div v-if="searchResults">

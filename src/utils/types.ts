@@ -36,12 +36,3 @@ export type TransferImage = {
  * @type {Query}
  */
 export type Query = Array<Blob>
-
-export type Crop = {
-  width: number,
-  height: number,
-  left: number,
-  top: number
-};
-
-
