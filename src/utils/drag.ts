@@ -1,54 +1,42 @@
-import { type TransferItem } from './types'
+import { fetchImage } from './image';
+import { isTextMimeType, sortTypes } from './media';
+import { fromHtml, fromPlain, fromText } from './text';
 
 /*
   * This function extracts the data from the DragEvent's dataTransfer object,
   * converting it into an array of TransferItem objects.
-  * Each TransferItem contains a type and the corresponding data.
   * The type is usually a MIME type or "Files" for file lists.
   * The data can be a string, a FileList, or a Blob.
   *
   * @param event - The drag event to convert.
-  * @returns An array of TransferItem objects.
+  * @returns A Blob containing the image or undefined if the drop did not contain an image.
   */
-export const fromDropEvent = (event: DragEvent): TransferItem[] => {
-  const data = event.dataTransfer;
-  console.log('data', data)
-
-  const types = data?.types;
-  console.log('types', types)
-
-  const transferItems = (data !== null && types !== undefined) ? types.map((type) => ({ type, data: (type === 'Files') ? data.files : data.getData(type) })) : []
-
-  console.log('transferItems', transferItems)
-  return transferItems
-}
-
-export const fromDropEventX = (event: DragEvent): Blob[] => {
-  const query: Blob[] = [];
-
+export const fromDrop = async (event: DragEvent): Promise<Blob | File | undefined> => {
   const { dataTransfer } = event;
-  console.log('dataTransfer', dataTransfer)
+  const { types } = dataTransfer ?? { types: [] };;
+  const sorted = sortTypes(Array.from(types));
+  console.log('sorted', sorted)
 
-  if (dataTransfer) {
-    const { types } = dataTransfer;
-    console.log('types', types)
+  sorted.forEach((type) => console.log(type, dataTransfer?.getData(type)));
 
-    if (types) {
-      for (let i = 0; i < types.length; i++) {
-        const type = types[i];
-        console.log('type', type)
-        if (type === 'Files') {
-          Array.from(dataTransfer.files).forEach((file) => query.push(file));
-        } else {
-          const data = dataTransfer.getData(type);
-          console.log('data', data)
-          query.push(new Blob([data], { type }));
+  for (let i = 0; i < sorted.length; i++) {
+    const type = sorted[i];
+
+    if (type === 'Files') {
+        const files = dataTransfer?.files;
+        if (files && files.length > 0) {
+          return Promise.resolve(files[0]);
         }
       }
+      else if (isTextMimeType(type)) {
+        const data = dataTransfer?.getData(type);
+        if (data) {
+          return fromText(type as DOMParserSupportedType, data);
+        }
     }
   }
 
-  console.log('fromDropEventX', query)
-  return query
+  return Promise.resolve(undefined)
 }
+
 

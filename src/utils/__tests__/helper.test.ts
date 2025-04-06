@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isImageName, isUrl, isImageUrl, isImageData } from '../helpers';
+import { isImageName, isUrl, isImageUrl, isImageData } from '../url';
 
 describe('isImageName', () => {
   it('should return true for valid image URLs', () => {

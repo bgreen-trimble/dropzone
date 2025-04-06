@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import CloseIcon from '@/components/icon/CloseIcon.vue';
 import { Cropper, type CropperResult, type Coordinates } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
 const props = defineProps<{
-  blob: Blob;
+  image?: Blob;
   crop?: Coordinates;
 }>();
 
@@ -51,12 +51,18 @@ const change = (event: CropperResult) => {
 }
 
 onMounted(() => {
-  console.log('ImageCropper mounted', props.blob)
-  if (props.blob) {
-    src.value = URL.createObjectURL(props.blob)
+  console.log('ImageCropper mounted', props.image)
+  if (props.image) {
+    src.value = URL.createObjectURL(props.image)
   }
 })
 
+onBeforeUnmount(() => {
+  console.log('ImageCropper unmounted')
+  if (src.value) {
+    URL.revokeObjectURL(src.value)
+  }
+})
 </script>
 
 <template>

@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { fromClipboardX, fromDropEventX } from '@/utils';
+import { ref } from 'vue'
+import { fromClipboardX, fromDrop } from '@/utils';
 import CloseIcon from '@/components/icon/CloseIcon.vue';
 import DropIcon from '@/components/icon/DropIcon.vue';
 
 // Events declaration
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'query', query: Blob[]): void;
+  (e: 'submit', query: Blob | File): void;
 }>();
 
 const isOverDropZone = ref(false)
 const searchInput = ref('')
 
-// functions
 const close = () => {
   console.log('Close button clicked')
   emit('close')
@@ -26,9 +25,9 @@ const handleKeyDown = (event: KeyboardEvent) => {
     // Ctrl+V or Cmd+V is pressed
     console.log('Paste event detected!');
     isOverDropZone.value = false
-    fromClipboardX().then((query) => {
-      console.log('Query from clipboard:', query)
-      emit('query', query)
+    fromClipboardX().then((value) => {
+      console.log('Query from clipboard:', value)
+      emit('submit', value[0])
     }).catch((error) => {
       console.error('Error processing clipboard data:', error)
     })
@@ -51,14 +50,22 @@ const handleDrop = (event: DragEvent) => {
   console.log('handleDrop', event)
   event.preventDefault()
   isOverDropZone.value = false
-  const query = fromDropEventX(event)
-  emit('query', query)
+
+  fromDrop(event).then((value) => {
+    console.log('Image from drop:', value)
+    if (value) {
+      emit('submit', value)
+    }
+
+  }).catch((error: Error) => {
+    console.error('Error processing drop data:', error)
+  })
 }
 
 const handleSubmit = () => {
   console.log('Search button clicked with query:', searchInput.value)
-  const query = [new Blob([searchInput.value], { type: 'text/plain' })]
-  emit('query', query)
+  //const query = [new Blob([searchInput.value], { type: 'text/plain' })]
+  //emit('query', query)
 }
 
 const handleFileUpload = (event: Event) => {
@@ -66,14 +73,9 @@ const handleFileUpload = (event: Event) => {
   if (input.files && input.files.length > 0) {
     const file = input.files[0];
     console.log('File selected:', file);
-    const query = [file]
-    emit('query', query)
+    emit('submit', file)
   }
 }
-// lifecycle hooks
-onMounted(() => {
-  console.log('Component mounted')
-})
 </script>
 
 <template>

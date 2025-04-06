@@ -1,8 +1,4 @@
 
-export const isImageMimeType = (type: string) => type.match(/^image\//) !== null
-export const isTextMimeType = (type: string) => type.match(/^text\//) !== null
-
-
 export const isImageName = (name: string) => {
   const url = new URL(name)
   return url.pathname.match(/\.(jpeg|jpg|gif|png|webp)/) !== null

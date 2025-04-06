@@ -1,4 +1,4 @@
-import type { Query } from "@/utils/types";
+import type { Coordinates } from "vue-advanced-cropper";
 
 const sofas = [
   "/dropzone/sofa/sofa-01.webp",
@@ -15,13 +15,11 @@ const sofas = [
   "/dropzone/sofa/red-sofa-05.webp",
 ];
 
-export const search = (query: Query): Promise<string[]> => {
-  console.log("search api", query);
-  const text = query.find((item) => item.type === "text/plain");
-  const image = query.find((item) => item.type.startsWith("image/"));
+export const search = (text?: string, image?: Blob, crop?: Coordinates): Promise<string[]> => {
+  console.log("search api", text, image, crop);
   return new Promise(async (resolve) => {
     const request = {
-      text: await text?.text(),
+      text: text,
       image: await image?.arrayBuffer(),
     }
 

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import type { CropperResult, Coordinates } from "vue-advanced-cropper";
 import { search } from '@/api/warehouse';
-import type { Query } from '@/utils/types';
-import { stringify } from '@/utils/query';
 import MicrophoneIcon from '@/components/icon/MicrophoneIcon.vue';
 import SearchIcon from '@/components/icon/SearchIcon.vue';
 import ImageAddIcon from '@/components/icon/ImageAddIcon.vue';
@@ -34,18 +32,12 @@ import ImageCropper from '@/components/image/ImageCropper.vue'
  *     - if the text is empty, clear the image
  */
 
-// Last search query
-const last = ref<Query>();
 
-// Unsubmitted search query elements
 const text = ref<string>();
 const image = ref<Blob>();
 const crop = ref<Coordinates>();
 
 const thumbnail = ref<string>();
-
-const original = ref<Blob>();
-const searchInput = ref<string>();
 
 const showSuggestionsCapture = ref(false);
 const showImageCapture = ref(false);
@@ -54,43 +46,23 @@ const showImageCropper = ref(false);
 
 // All the results of the image capture
 const stringifiedImageCaptureResults = ref();
-
-
 const searchResults = ref<string[]>();
+
+const placeholder = computed(() => image.value ? 'Add to your search' : 'Search...');
 
 const suggestions = ref(['example search 1', 'example search 2', 'example search 3']);
 
-/**
- * Inserts any blobs of a specific type in the query with a new blob. If the
- * query already contains blobs of that type, they will be removed. If the query is
- * undefined, it will be created with the new blob.
- * @param query The current query array
- * @param blob The new blob to add
- * @param type The MIME type prefix to replace (e.g., 'text/', 'image/')
- * @returns A new query array with the replaced blob
- */
-const updateQuery = (blob: Blob, query?: Query, type?: string): Query => {
-  const clean = query ? query.filter(item => !item.type.startsWith(type ? type : blob.type)) : [];
-  return [...clean, blob];
-};
-
 const selectSuggestion = (suggestion: string) => {
-  searchInput.value = suggestion;
+  text.value = suggestion;
   showSuggestionsCapture.value = false;
 };
 
 const performSearch = () => {
   console.log('Performing search with:', text.value);
 
-  showSuggestionsCapture.value = false;
-  /*
-  console.log('Searching for:', next.value);
-  if (next.value) {
-    search(next.value).then((results) => {
-      searchResults.value = results;
-    });
-  }
-  */
+  search(text.value, image.value, crop.value).then((results) => {
+    searchResults.value = results;
+  });
 };
 
 /*****************************************
@@ -174,20 +146,10 @@ const startImageCapture = () => {
   showImageCapture.value = true;
 };
 
-const handleImageSubmit = (result: Query) => {
-  console.log('Image search result:', result);
-  if (result) {
-    stringify(result).then((items) => {
-      console.log('Stringified query:', result);
-      stringifiedImageCaptureResults.value = items;
-    });
-
-    // Find the first blob with an image type in the result array
-    const imageBlob = result.find(blob => blob.type.startsWith('image/'));
-
-    if (imageBlob) {
-      //next.value = [imageBlob];
-    }
+const handleImageSubmit = (value: Blob | File) => {
+  console.log('Image search result:', value);
+  if (value) {
+    image.value = value as Blob;
   }
   showImageCapture.value = false;
 };
@@ -204,7 +166,7 @@ const startImageCrop = () => {
 const handleImageCrop = (event: CropperResult) => {
   console.log('Image cropped:', event);
   if (event) {
-    const { coordinates, canvas: original} = event;
+    const { coordinates, canvas: original } = event;
     crop.value = coordinates;
     if (original) {
       const { width, height } = coordinates;
@@ -241,7 +203,31 @@ const handleClearSearch = () => {
 
 const handleDragStart = () => {
   showImageCapture.value = true;
+  showSuggestionsCapture.value = false;
 };
+
+watch(thumbnail, (_, old) => {
+  if (old) {
+    URL.revokeObjectURL(old);
+  }
+});
+
+watch(image, (value) => {
+  console.log('Image changed:', value);
+  if (value === undefined) {
+    text.value = undefined;
+    crop.value = undefined;
+    thumbnail.value = undefined;
+  }
+  else {
+    text.value = undefined;
+    crop.value = undefined;
+    thumbnail.value = URL.createObjectURL(value);
+
+    performSearch();
+    showImageCropper.value = true;
+  }
+});
 
 /*
 watch(next, (value) => {
@@ -301,7 +287,8 @@ onUnmounted(() => {
           </span>
         </button>
 
-        <TextCapture :text="text" @focus="handleTextFocus" @escape="handleTextEscape" @change="handleTextChange" @submit="handleTextSubmit"/>
+        <TextCapture :text="text" :placeholder="placeholder" @focus="handleTextFocus" @escape="handleTextEscape"
+          @change="handleTextChange" @submit="handleTextSubmit" />
 
         <button v-if="text || image" class="search-button" @click="handleClearSearch()"
           style="border-right: 1px solid lightgray;">
@@ -321,23 +308,25 @@ onUnmounted(() => {
           </span>
         </button>
       </div>
+
       <div class="overlay" v-if="showVoiceCapture">
         <div class="image-search-modal">
           <SpeechCapture @submit="handleVoiceSubmit" />
         </div>
       </div>
+
       <div class="overlay" v-if="showImageCapture">
         <div class="image-search-modal">
-          <!-- Image search functionality goes here -->
-          <ImageCapture @close="showImageCapture = false" :query="next" @query="handleImageSubmit" />
+          <ImageCapture @close="showImageCapture = false" @submit="handleImageSubmit" />
         </div>
       </div>
-      <div class="overlay" v-if="showImageCropper && original">
+
+      <div class="overlay" v-if="showImageCropper">
         <div class="image-search-modal">
-          <!-- Image search functionality goes here -->
-          <ImageCropper @close="showImageCropper = false" @cropped="handleImageCrop" :blob="original" :crop="crop" />
+          <ImageCropper @close="showImageCropper = false" @cropped="handleImageCrop" :image="image" :crop="crop" />
         </div>
       </div>
+
       <div class="search-dropdown" v-if="showSuggestionsCapture">
         <div class="dropdown-item" v-for="(suggestion, index) in suggestions" :key="index"
           @mousedown="selectSuggestion(suggestion)">
@@ -348,14 +337,15 @@ onUnmounted(() => {
     </div>
 
     <div>
-      <div v-if="last">
+      <div v-if="false">
         <h2>Image Search Results:</h2>
         <pre>{{ stringifiedImageCaptureResults }}</pre>
       </div>
     </div>
-    <h2>Thumbnail:</h2>
-    <img :src="thumbnail"
-      style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
+    <div v-if="thumbnail">
+      <h2>Cropped Image:</h2>
+      <img :src="thumbnail" style="border-radius: 24px; box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);" width="200px">
+    </div>
 
     <div v-if="searchResults">
       <h2>Search Results:</h2>

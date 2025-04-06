@@ -55,7 +55,6 @@ export const fromClipboard = (): Promise<TransferItem[]> => {
   })
 }
 
-
 const fromClipboardItems = (clipboardItems: ClipboardItem[]) => {
   // Map each clipboard item to an array of blobs (one for each type)
   const blobArrays = Promise.all(
