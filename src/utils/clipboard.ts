@@ -35,12 +35,12 @@ export const fromClipboard = (): Promise<Blob | undefined> =>
         const promises = blobs.filter((blob) => isTextMimeType(blob.type))
           .map((text) => text.text().then((value: string) => ({ type: text.type, value })));
 
-        // reduce all the pair to a single type/value pair
+        // Reduce all the pairs to an image.
         return Promise.all(promises)
-        .then((texts) => texts.reduce(async (acc: Promise<Blob | undefined>, pair: { type: string, value: string }) => {
-          const { type, value } = pair;
-          return acc.then((acc: Blob | undefined) => (acc !== undefined) ? acc : fromText(type as DOMParserSupportedType, value)).catch(() => undefined);
-        }, Promise.resolve(undefined)))
+          .then((texts) => texts.reduce(async (acc: Promise<Blob | undefined>, pair: { type: string, value: string }) => {
+            const { type, value } = pair;
+            return acc.then((acc: Blob | undefined) => (acc !== undefined) ? acc : fromText(type as DOMParserSupportedType, value)).catch(() => undefined);
+          }, Promise.resolve(undefined)))
       }
     })
 

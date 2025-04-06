@@ -44,8 +44,6 @@ const showImageCapture = ref(false);
 const showVoiceCapture = ref(false);
 const showImageCropper = ref(false);
 
-// All the results of the image capture
-const stringifiedImageCaptureResults = ref();
 const searchResults = ref<string[]>();
 
 const placeholder = computed(() => image.value ? 'Add to your search' : 'Search...');
@@ -337,10 +335,6 @@ onUnmounted(() => {
     </div>
 
     <div>
-      <div v-if="false">
-        <h2>Image Search Results:</h2>
-        <pre>{{ stringifiedImageCaptureResults }}</pre>
-      </div>
     </div>
     <div v-if="thumbnail">
       <h2>Cropped Image:</h2>
@@ -348,7 +342,7 @@ onUnmounted(() => {
     </div>
 
     <div v-if="searchResults">
-      <h2>Search Results:</h2>
+      <h2>Fake Search Results:</h2>
       <div style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
         <div v-for="(result, index) in searchResults" :key="index" style="display: flex 1">
           <!-- Assuming result is a URL to an image -->

@@ -83,28 +83,17 @@ export const fromPlain = (type: string, values: string) => {
 }
 
 /*
-  * This function extracts the data from text mime types.
-  * The type is usually a MIME type or "Files" for file lists.
+  * This function extracts the URLs from text mime types.
   *
   * @param type - The MIME type of the data.
-  * @param value - The data to convert.
-  * @returns A Blob containing the image or undefined if the drop did not contain an image.
+  * @param value - The text to convert.
+  * @returns A Blob containing the image or undefined if it did not contain an image.
   */
-export const fromText = async (type: DOMParserSupportedType | 'text/plain', value: string): Promise<Blob | undefined> => {
+export const fromText = (type: DOMParserSupportedType | 'text/plain', value: string): Promise<Blob | undefined> => {
   const urls = (type === 'text/html') ? fromHtml(type, value) : fromPlain(type, value)
   urls.forEach((url) => console.log('fromText', type, url));
 
-  // Process URLs sequentially until one resolves to a Blob
-  if (urls.length > 0) {
-    // Try each URL until one resolves
-    for (const url of urls) {
-      const blob = await fetchImage(url)
-      if (blob) {
-        return blob;
-      }
-    }
-  }
-
-  return Promise.resolve(undefined)
+  return urls.reduce((acc:  Promise<Blob | undefined>, url: string) =>
+    acc.then((acc: Blob | undefined) => (acc !== undefined) ? acc : fetchImage(url).catch(() => undefined)),
+    Promise.resolve(undefined))
 }
-
