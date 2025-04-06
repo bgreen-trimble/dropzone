@@ -26,7 +26,7 @@ export const search = (text?: string, image?: Blob, crop?: Coordinates): Promise
     console.log("search api request", request);
 
     // Shuffling array and picking 4 random sofas
-    const shuffled = (request.text === 'red' ? sofas.filter((item) => item.includes('red')) : sofas).sort(() => 0.5 - Math.random());
+    const shuffled = (request.text?.indexOf('red') !== -1 ? sofas.filter((item) => item.includes('red')) : sofas).sort(() => 0.5 - Math.random());
     const randomSofas = shuffled.slice(0, 4);
 
     setTimeout(() => {

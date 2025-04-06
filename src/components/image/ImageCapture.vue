@@ -65,10 +65,10 @@ const handleKeyDown = (event: KeyboardEvent) => {
         emit('submit', value)
       }
       else {
-        error.value = "Can't use this. Try another image."
+        error.value = "Unable to use this. Try another image."
       }
     }).catch((event: Error) => {
-      error.value = "Can't use this. Try another image."
+      error.value = "Unable to use this. Try another image."
       console.error('Error processing clipboard data:', event)
     })
   }
@@ -97,10 +97,10 @@ const handleDrop = (event: DragEvent) => {
       emit('submit', value)
     }
     else {
-      error.value = "Can't use this. Try another image."
+      error.value = "Unable to use this. Try another image."
     }
   }).catch((event: Error) => {
-    error.value = "Can't use this. Try another image."
+    error.value = "Unable to use this. Try another image."
     console.error('Error processing drop data:', event)
   })
 }
@@ -109,7 +109,7 @@ const handleButtonSubmit = () => {
   console.log('Search button clicked with query:', text.value)
   if (text.value) {
     if (!isUrl(text.value)) {
-      error.value = "Can't use this link. Check that your link starts with 'http://' or 'https://' to try again."
+      error.value = "Unable to use this link. Check that your link starts with 'http://' or 'https://' to try again."
       return
     }
     fromText('text/plain', text.value).then((value) => {
@@ -118,10 +118,10 @@ const handleButtonSubmit = () => {
         emit('submit', value)
       }
       else {
-        error.value = "Can't use this. Try another image."
+        error.value = "Unable to use this. Try another image."
       }
     }).catch((event: Error) => {
-      error.value = "Can't use this. Try another image."
+      error.value = "Unable to use this. Try another image."
       console.error('Error processing drop data:', event)
     })
   }
