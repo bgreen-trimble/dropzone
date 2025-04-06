@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { fromClipboardX, fromDrop } from '@/utils';
+import { fromClipboard, fromDrop } from '@/utils';
 import CloseIcon from '@/components/icon/CloseIcon.vue';
 import DropIcon from '@/components/icon/DropIcon.vue';
 
@@ -16,7 +16,6 @@ const searchInput = ref('')
 const close = () => {
   console.log('Close button clicked')
   emit('close')
-
 }
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -25,7 +24,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
     // Ctrl+V or Cmd+V is pressed
     console.log('Paste event detected!');
     isOverDropZone.value = false
-    fromClipboardX().then((value) => {
+    fromClipboard().then((value) => {
       console.log('Query from clipboard:', value)
       emit('submit', value[0])
     }).catch((error) => {
@@ -56,7 +55,6 @@ const handleDrop = (event: DragEvent) => {
     if (value) {
       emit('submit', value)
     }
-
   }).catch((error: Error) => {
     console.error('Error processing drop data:', error)
   })

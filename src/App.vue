@@ -11,7 +11,6 @@ import { RouterLink, RouterView } from 'vue-router';
       </div>
       <div style="display: flex; gap: 4px; margin-left: auto;">
         <RouterLink to="/" class="nav-link" style="text-decoration: none; background: none; border: none; cursor: pointer; padding: 8px 12px;">General Search</RouterLink>
-        <RouterLink to="/original" class="nav-link" style="text-decoration: none; background: none; border: none; cursor: pointer; padding: 8px 12px;">Image Search</RouterLink>
       </div>
     </div>
     <div>
