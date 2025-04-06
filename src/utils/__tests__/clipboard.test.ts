@@ -3,8 +3,8 @@ import { fromClipboard } from '../clipboard';
 
 describe('Test clipboard', () => {
   it('should return items from the clipboard', async () => {
-    const items = await fromClipboard();
+    const image = await fromClipboard();
     expect(navigator.clipboard.read).toHaveBeenCalled();
-    expect(items.length).toEqual(4);
+    expect(image).toEqual(undefined);
   });
 })

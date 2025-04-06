@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { imagesFromImg, imagesFromStyle } from '../image';
+import { imagesFromImg, imagesFromStyle } from '../text';
 
 describe('Parsing HTML for images', () => {
   let originalConsoleLog: typeof console.log;
@@ -21,7 +21,7 @@ describe('Parsing HTML for images', () => {
       </div>
     `;
 
-    const result = imagesFromImg(html);
+    const result = imagesFromImg('text/html', html);
 
     expect(result).toEqual([
       'https://example.com/image1.jpg',
@@ -36,7 +36,7 @@ describe('Parsing HTML for images', () => {
       </div>
     `;
 
-    const result = imagesFromImg(html);
+    const result = imagesFromImg('text/html', html);
 
     expect(result).toEqual(['data:image/jpeg;base64,/9j/4AAQSkZJRg==']);
   });
@@ -48,7 +48,7 @@ describe('Parsing HTML for images', () => {
       </div>
     `;
 
-    const result = imagesFromImg(html);
+    const result = imagesFromImg('text/html', html);
 
     expect(result).toEqual([]);
   });
@@ -61,7 +61,7 @@ describe('Parsing HTML for images', () => {
       </div>
     `;
 
-    const result = imagesFromImg(html);
+    const result = imagesFromImg('text/html', html);
 
     expect(result).toEqual(['https://example.com/image.jpg']);
   });
@@ -74,7 +74,7 @@ describe('Parsing HTML for images', () => {
       </div>
     `;
 
-    const result = imagesFromImg(html);
+    const result = imagesFromImg('text/html', html);
 
     // The parser should still find the valid img element
     expect(result.length).toBeGreaterThan(0);
@@ -107,7 +107,7 @@ describe('Parsing HTML for background images', () => {
       </div>
     `;
 
-    const result = imagesFromStyle(html);
+    const result = imagesFromStyle('text/html', html);
 
     expect(result).toEqual([
       'https://example.com/bg1.jpg',
@@ -122,7 +122,7 @@ describe('Parsing HTML for background images', () => {
       </div>
     `;
 
-    const result = imagesFromStyle(html);
+    const result = imagesFromStyle('text/html', html);
 
     expect(result).toEqual([
       'https://example.com/no-quotes.jpg',
@@ -145,7 +145,7 @@ describe('Parsing HTML for background images', () => {
       };
     });
 
-    const result = imagesFromStyle(html);
+    const result = imagesFromStyle('text/html', html);
 
     expect(result).toEqual(['https://example.com/computed-bg.jpg']);
   });
@@ -157,7 +157,7 @@ describe('Parsing HTML for background images', () => {
       </div>
     `;
 
-    const result = imagesFromStyle(html);
+    const result = imagesFromStyle('text/html', html);
 
     expect(result).toEqual([]);
   });
@@ -180,7 +180,7 @@ describe('Parsing HTML for background images', () => {
       };
     });
 
-    const result = imagesFromStyle(html);
+    const result = imagesFromStyle('text/html', html);
 
     expect(result).toContain('https://example.com/inline-bg.jpg');
     expect(result).toContain('https://example.com/computed-bg.jpg');
