@@ -2,13 +2,15 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import type { CropperResult, Coordinates } from "vue-advanced-cropper";
 import { search } from '@/api/warehouse';
+import { useSuggestionsStore } from '@/store/suggestions';
+
 import SearchIcon from '@/components/Icon/SearchIcon.vue';
 import MicrophoneIcon from '@/components/Icon/MicrophoneIcon.vue';
 import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
 import CloseIcon from '@/components/Icon/CloseIcon.vue'
 import TextCapture from '@/components/text/TextCapture.vue'
 import SpeechCapture from '@/components/speech/SpeechCapture.vue'
-import SuggestCapture from '@/components/suggest/SuggestCapture.vue';
+import SuggestionCapture from '@/components/suggest/SuggestionCapture.vue';
 import ImageCapture from '@/components/image/ImageCapture.vue'
 import ImageCropper from '@/components/image/ImageCropper.vue'
 
@@ -33,6 +35,8 @@ import ImageCropper from '@/components/image/ImageCropper.vue'
  *     - if the text is empty, clear the image
  */
 
+const suggestionsStore = useSuggestionsStore()
+
 const text = ref<string>();
 const image = ref<Blob>();
 const crop = ref<Coordinates>();
@@ -50,10 +54,13 @@ const placeholder = computed(() => image.value ? 'Add to your search' : 'Search.
 
 const performSearch = () => {
   console.log('Performing search with:', text.value);
-
-  search(text.value, image.value, crop.value).then((results) => {
-    searchResults.value = results;
-  });
+  if (text.value) {
+    const { updateSearches } = suggestionsStore;
+    updateSearches(text.value);
+    search(text.value, image.value, crop.value).then((results) => {
+      searchResults.value = results;
+    });
+  }
 };
 
 /*****************************************
@@ -84,7 +91,6 @@ const handleTextEscape = () => {
 * @param value The current value of the text input
 */
 const handleTextChange = (value?: string) => {
-  console.log('Text changed:', value);
   text.value = value;
 
   if (value) {
@@ -139,7 +145,6 @@ const startImageCapture = () => {
 };
 
 const handleImageSubmit = (value: Blob | File) => {
-  console.log('Image search result:', value);
   if (value) {
     image.value = value as Blob;
   }
@@ -151,12 +156,10 @@ const handleImageSubmit = (value: Blob | File) => {
  */
 
 const startImageCrop = () => {
-  console.log('Starting crop search');
   showImageCropper.value = true;
 };
 
 const handleImageCrop = (event: CropperResult) => {
-  console.log('Image cropped:', event);
   if (event) {
     const { coordinates, canvas: original } = event;
     crop.value = coordinates;
@@ -222,7 +225,6 @@ watch(thumbnail, (_, old) => {
 });
 
 watch(image, (value) => {
-  console.log('Image changed:', value);
   if (value === undefined) {
     text.value = undefined;
     crop.value = undefined;
@@ -300,8 +302,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div v-if="showSuggestionsCapture">
-        <SuggestCapture :text="text" @submit="handleSuggestionSubmit" @close="showSuggestionsCapture = false" />
+      <div v-if="showSuggestionsCapture || true">
+        <SuggestionCapture :text="text" @submit="handleSuggestionSubmit" @close="showSuggestionsCapture = false" />
       </div>
     </div>
 
@@ -374,13 +376,5 @@ onUnmounted(() => {
 
 .search-icon {
   color: #5f6368;
-}
-
-.vertical-bar {
-  font-size: 14px;
-  color: lightgray;
-  border-left: 1px solid rgba(248, 249, 250, 0.25);
-  height: 65%;
-  display: block;
 }
 </style>
