@@ -281,7 +281,7 @@ onUnmounted(() => {
         </button>
         <button v-if="thumbnail" class="search-button" @click="startImageCrop">
           <span class="search-icon">
-            <img :src="thumbnail" alt="Thumbnail" style="width: 24px; height: 24px; border-radius: 20%;" />
+            <img :src="thumbnail" alt="Thumbnail" style="height: 32px; border-radius: 20%;" />
           </span>
         </button>
 
