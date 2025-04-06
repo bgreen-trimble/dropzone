@@ -302,7 +302,7 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div v-if="showSuggestionsCapture || true">
+      <div v-if="showSuggestionsCapture">
         <SuggestionCapture :text="text" @submit="handleSuggestionSubmit" @close="showSuggestionsCapture = false" />
       </div>
     </div>

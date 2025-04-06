@@ -48,8 +48,7 @@ const getSuggestions = computed(() => {
         <SearchIcon v-if="hasText"/>
         <RefreshIcon v-else/>
       </span>
-      <SuggestionHighlight v-if="hasText" :suggestion="suggestion" :text="text" />
-      <span v-else style="padding-left: 8px">{{ suggestion }}</span>
+      <SuggestionHighlight style="padding-left: 8px;" :suggestion="suggestion" :text="text" />
     </div>
   </div>
 </template>

@@ -12,24 +12,23 @@ const props = defineProps({
     default: undefined
   },
 });
-const hasText = computed(() => props.text?.length);
 
 const html = computed(() => {
-  if (hasText.value) {
+  if (props.text) {
     const text = props.text || '';
     const suggestion = props.suggestion || '';
-    const suggestionLower = suggestion.toLowerCase();
-    const textLower = text.toLowerCase();
-    const textIndex = suggestionLower.indexOf(textLower);
 
-    if (textIndex !== -1) {
-      const prefix = suggestion.substring(0, textIndex);
-      const match = suggestion.substring(textIndex, textIndex + text.length);
-      const suffix = suggestion.substring(textIndex + text.length);
-      return `${prefix}<span style="font-weight: normal">${match}</span>${suffix}`;
-    } else {
+    if (text.trim() === '') {
       return suggestion;
     }
+
+    // Create regex that matches all instances, case insensitive
+    const regex = new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+    // Replace all matches with the highlighted version
+    return suggestion.replace(regex, match =>
+      `<span style="font-weight: normal">${match}</span>`
+    );
   } else {
     return props.suggestion;
   }
