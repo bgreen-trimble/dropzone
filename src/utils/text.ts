@@ -90,7 +90,7 @@ export const fromPlain = (type: string, values: string) => {
   * @param value - The data to convert.
   * @returns A Blob containing the image or undefined if the drop did not contain an image.
   */
-export const fromText = async (type: DOMParserSupportedType, value: string): Promise<Blob | undefined> => {
+export const fromText = async (type: DOMParserSupportedType | 'text/plain', value: string): Promise<Blob | undefined> => {
   const urls = (type === 'text/html') ? fromHtml(type, value) : fromPlain(type, value)
   urls.forEach((url) => console.log('fromText', type, url));
 
@@ -98,7 +98,7 @@ export const fromText = async (type: DOMParserSupportedType, value: string): Pro
   if (urls.length > 0) {
     // Try each URL until one resolves
     for (const url of urls) {
-      const blob = await fetchImage(url).catch();
+      const blob = await fetchImage(url)
       if (blob) {
         return blob;
       }

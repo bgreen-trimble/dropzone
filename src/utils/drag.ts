@@ -1,6 +1,5 @@
-import { fetchImage } from './image';
 import { isTextMimeType, sortTypes } from './media';
-import { fromHtml, fromPlain, fromText } from './text';
+import { fromText } from './text';
 
 /*
   * This function extracts the data from the DragEvent's dataTransfer object,
@@ -23,16 +22,16 @@ export const fromDrop = async (event: DragEvent): Promise<Blob | File | undefine
     const type = sorted[i];
 
     if (type === 'Files') {
-        const files = dataTransfer?.files;
-        if (files && files.length > 0) {
-          return Promise.resolve(files[0]);
-        }
+      const files = dataTransfer?.files;
+      if (files && files.length > 0) {
+        return Promise.resolve(files[0]);
       }
-      else if (isTextMimeType(type)) {
-        const data = dataTransfer?.getData(type);
-        if (data) {
-          return fromText(type as DOMParserSupportedType, data);
-        }
+    }
+    else if (isTextMimeType(type)) {
+      const data = dataTransfer?.getData(type);
+      if (data) {
+        return fromText(type as DOMParserSupportedType, data);
+      }
     }
   }
 

@@ -1,4 +1,3 @@
-
 export const isImageName = (name: string) => {
   const url = new URL(name)
   return url.pathname.match(/\.(jpeg|jpg|gif|png|webp)/) !== null
@@ -11,13 +10,13 @@ export const isUrl = (url: string) => {
 /**
  * Checks if the provided string is both a valid URL and represents an image file.
  *
- * @param url - The string to check if it's an image URL
+ * @param value - The string to check if it's an image URL
  * @returns True if the string is both a valid URL and an image file name, false otherwise
  * @see isUrl
  * @see isImageName
  */
-export const isImageUrl = (url: string) => {
-  return isUrl(url) && isImageName(url)
+export const isImageUrl = (value: string) => {
+  return isUrl(value) && isImageName(value)
 }
 
 /**
