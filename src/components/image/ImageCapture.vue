@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { fromClipboard, fromDrop, isUrl } from '@/utils';
-import CloseIcon from '@/components/icon/CloseIcon.vue';
-import DropIcon from '@/components/icon/DropIcon.vue';
+import CloseIcon from '@/components/Icon/CloseIcon.vue';
+import DropIcon from '@/components/Icon/DropIcon.vue';
 import TextCapture from '@/components/text/TextCapture.vue';
 import { fromText } from '@/utils/text';
 

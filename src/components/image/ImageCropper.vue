@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import CloseIcon from '@/components/icon/CloseIcon.vue';
+import CloseIcon from '@/components/Icon/CloseIcon.vue';
 import { Cropper, type CropperResult, type Coordinates } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 

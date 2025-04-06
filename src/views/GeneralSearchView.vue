@@ -2,10 +2,10 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import type { CropperResult, Coordinates } from "vue-advanced-cropper";
 import { search } from '@/api/warehouse';
-import SearchIcon from '../components/icon/SearchIcon.vue';
-import MicrophoneIcon from '@/components/icon/MicrophoneIcon.vue';
-import ImageAddIcon from '@/components/icon/ImageAddIcon.vue';
-import CloseIcon from '@/components/icon/CloseIcon.vue'
+import SearchIcon from '@/components/Icon/SearchIcon.vue';
+import MicrophoneIcon from '@/components/Icon/MicrophoneIcon.vue';
+import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
+import CloseIcon from '@/components/Icon/CloseIcon.vue'
 import TextCapture from '@/components/text/TextCapture.vue'
 import SpeechCapture from '@/components/speech/SpeechCapture.vue'
 import ImageCapture from '@/components/image/ImageCapture.vue'
