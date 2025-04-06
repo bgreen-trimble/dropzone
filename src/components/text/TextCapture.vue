@@ -12,7 +12,6 @@ const props = defineProps({
   }
 });
 
-// Events declaration
 const emit = defineEmits<{
   (e: 'focus', inFocus: boolean ): void;
   (e: 'change', text?: string): void;

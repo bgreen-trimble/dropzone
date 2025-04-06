@@ -8,6 +8,7 @@ import ImageAddIcon from '@/components/Icon/ImageAddIcon.vue';
 import CloseIcon from '@/components/Icon/CloseIcon.vue'
 import TextCapture from '@/components/text/TextCapture.vue'
 import SpeechCapture from '@/components/speech/SpeechCapture.vue'
+import SuggestCapture from '@/components/suggest/SuggestCapture.vue';
 import ImageCapture from '@/components/image/ImageCapture.vue'
 import ImageCropper from '@/components/image/ImageCropper.vue'
 
@@ -32,7 +33,6 @@ import ImageCropper from '@/components/image/ImageCropper.vue'
  *     - if the text is empty, clear the image
  */
 
-
 const text = ref<string>();
 const image = ref<Blob>();
 const crop = ref<Coordinates>();
@@ -47,13 +47,6 @@ const showImageCropper = ref(false);
 const searchResults = ref<string[]>();
 
 const placeholder = computed(() => image.value ? 'Add to your search' : 'Search...');
-
-const suggestions = ref(['example search 1', 'example search 2', 'example search 3']);
-
-const selectSuggestion = (suggestion: string) => {
-  text.value = suggestion;
-  showSuggestionsCapture.value = false;
-};
 
 const performSearch = () => {
   console.log('Performing search with:', text.value);
@@ -109,6 +102,7 @@ const handleTextChange = (value?: string) => {
 const handleTextSubmit = (value?: string) => {
   if (value) {
     text.value = value;
+    showSuggestionsCapture.value = false;
     performSearch();
   }
 };
@@ -188,6 +182,23 @@ const handleImageCrop = (event: CropperResult) => {
 };
 
 /*****************************************
+ * SUGGESTION CAPTURE
+ */
+
+/**
+ * Handle the submit event of the suggestions. If a value is provided, update
+ * the text and perform a search.
+ *
+ * @param value
+ */
+const handleSuggestionSubmit = (value?: string) => {
+  if (value) {
+    text.value = value;
+    showSuggestionsCapture.value = false;
+    performSearch();
+  }
+};
+/*****************************************
  * CONTROL HANDLERS
  */
 
@@ -226,42 +237,6 @@ watch(image, (value) => {
     showImageCropper.value = true;
   }
 });
-
-/*
-watch(next, (value) => {
-  if (value) {
-    if (searchInput.value) {
-      searchInput.value = undefined;
-    }
-    if (original.value) {
-      original.value = undefined;
-    }
-    if (crop.value) {
-      crop.value = undefined;
-    }
-    if (thumbnail.value) {
-      URL.revokeObjectURL(thumbnail.value);
-      thumbnail.value = undefined;
-    }
-
-    const imageBlob = value.find(blob => blob.type.startsWith('image/'));
-    if (imageBlob) {
-      original.value = imageBlob;
-      thumbnail.value = URL.createObjectURL(imageBlob);
-    }
-
-    const textBlob = value.find(blob => blob.type.startsWith('text/plain'));
-    if (textBlob) {
-      textBlob.text().then((text) => {
-        console.log('Text from blob:', text);
-        searchInput.value = text;
-      });
-    }
-
-    performSearch();
-  }
-});
-*/
 
 onUnmounted(() => {
   if (thumbnail.value) {
@@ -308,29 +283,25 @@ onUnmounted(() => {
       </div>
 
       <div class="overlay" v-if="showVoiceCapture">
-        <div class="image-search-modal">
+        <div>
           <SpeechCapture @submit="handleVoiceSubmit" />
         </div>
       </div>
 
       <div class="overlay" v-if="showImageCapture">
-        <div class="image-search-modal">
+        <div>
           <ImageCapture @close="showImageCapture = false" @submit="handleImageSubmit" />
         </div>
       </div>
 
-      <div class="overlay" v-if="showImageCropper">
+      <div v-if="showImageCropper">
         <div class="image-search-modal">
           <ImageCropper @close="showImageCropper = false" @cropped="handleImageCrop" :image="image" :crop="crop" />
         </div>
       </div>
 
-      <div class="search-dropdown" v-if="showSuggestionsCapture">
-        <div class="dropdown-item" v-for="(suggestion, index) in suggestions" :key="index"
-          @mousedown="selectSuggestion(suggestion)">
-          <span class="suggestion-icon">🔍</span>
-          <span class="suggestion-text">{{ suggestion }}</span>
-        </div>
+      <div v-if="showSuggestionsCapture">
+        <SuggestCapture :text="text" @submit="handleSuggestionSubmit" @close="showSuggestionsCapture = false" />
       </div>
     </div>
 
@@ -399,33 +370,6 @@ onUnmounted(() => {
 
 .search-button:hover {
   background: #f1f3f4;
-}
-
-.search-dropdown {
-  position: absolute;
-  top: 50px;
-  left: 0;
-  width: 100%;
-  background: white;
-  border-radius: 0 0 24px 24px;
-  box-shadow: 0 4px 6px rgba(32, 33, 36, 0.28);
-  z-index: 10;
-}
-
-.dropdown-item {
-  padding: 12px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-.dropdown-item:hover {
-  background-color: #f1f3f4;
-}
-
-.suggestion-icon {
-  margin-right: 10px;
-  color: #5f6368;
 }
 
 .search-icon {
