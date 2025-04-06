@@ -294,7 +294,7 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div v-if="showImageCropper">
+      <div class="overlay" v-if="showImageCropper">
         <div class="image-search-modal">
           <ImageCropper @close="showImageCropper = false" @cropped="handleImageCrop" :image="image" :crop="crop" />
         </div>
