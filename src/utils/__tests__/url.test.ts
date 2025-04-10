@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isImageName, isUrl, isImageUrl, isImageData } from '../url';
+import { isImageName, isUrl, isImageUrl, isImageDataUrl } from '../url';
 
 describe('isImageName', () => {
   it('should return true for valid image URLs', () => {
@@ -46,14 +46,39 @@ describe('isUrl', () => {
   });
 });
 
+describe('isImageDataUrl', () => {
+  it('should return true for valid image data URLs', () => {
+    expect(isImageDataUrl('data:image/jpeg;base64,/9j/4AAQSkZJRg==')).toBe(true);
+    expect(isImageDataUrl('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA')).toBe(true);
+    expect(isImageDataUrl('data:image/gif;base64,R0lGODlhAQABAIAAAP')).toBe(true);
+    expect(isImageDataUrl('data:image/webp;base64,UklGRiQAAABXRUJQVlA4I')).toBe(true);
+    expect(isImageDataUrl('data:image/jpg;base64,/9j/4AAQSkZJRg==')).toBe(true);
+  });
+
+  it('should return false for non-image data URLs', () => {
+    expect(isImageDataUrl('data:text/plain;base64,SGVsbG8gV29ybGQ=')).toBe(false);
+    expect(isImageDataUrl('data:application/pdf;base64,JVBERi0xLjQK')).toBe(false);
+    expect(isImageDataUrl('data:audio/mp3;base64,SUQzBAAAAAAAI1')).toBe(false);
+  });
+
+  it('should return false for invalid data URLs', () => {
+    expect(isImageDataUrl('https://example.com/image.jpg')).toBe(false);
+    expect(isImageDataUrl('image/jpeg;base64,/9j/4AAQSkZJRg==')).toBe(false);
+    expect(isImageDataUrl('data:image/jpg')).toBe(false);
+    expect(isImageDataUrl('')).toBe(false);
+  });
+});
+
 describe('isImageUrl', () => {
   it('should return true for valid image URLs', () => {
+    expect(isImageUrl('data:image/jpeg;base64,/9j/4AAQSkZJRg==')).toBe(true);
     expect(isImageUrl('https://example.com/image.jpg')).toBe(true);
     expect(isImageUrl('https://example.com/path/to/image.png')).toBe(true);
     expect(isImageUrl('http://subdomain.example.com/image.webp')).toBe(true);
   });
 
   it('should return false for non-image URLs', () => {
+    expect(isImageUrl('data:application/pdf;base64,/9j/4AAQSkZJRg==')).toBe(false);
     expect(isImageUrl('https://example.com/document.pdf')).toBe(false);
     expect(isImageUrl('https://example.com/')).toBe(false);
     expect(isImageUrl('https://example.com/path')).toBe(false);
@@ -63,28 +88,5 @@ describe('isImageUrl', () => {
     expect(isImageUrl('example.com/image.jpg')).toBe(false);
     expect(isImageUrl('image.png')).toBe(false);
     expect(isImageUrl('/path/to/image.gif')).toBe(false);
-  });
-});
-
-describe('isImageData', () => {
-  it('should return true for valid image data URLs', () => {
-    expect(isImageData('data:image/jpeg;base64,/9j/4AAQSkZJRg==')).toBe(true);
-    expect(isImageData('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA')).toBe(true);
-    expect(isImageData('data:image/gif;base64,R0lGODlhAQABAIAAAP')).toBe(true);
-    expect(isImageData('data:image/webp;base64,UklGRiQAAABXRUJQVlA4I')).toBe(true);
-    expect(isImageData('data:image/jpg;base64,/9j/4AAQSkZJRg==')).toBe(true);
-  });
-
-  it('should return false for non-image data URLs', () => {
-    expect(isImageData('data:text/plain;base64,SGVsbG8gV29ybGQ=')).toBe(false);
-    expect(isImageData('data:application/pdf;base64,JVBERi0xLjQK')).toBe(false);
-    expect(isImageData('data:audio/mp3;base64,SUQzBAAAAAAAI1')).toBe(false);
-  });
-
-  it('should return false for invalid data URLs', () => {
-    expect(isImageData('https://example.com/image.jpg')).toBe(false);
-    expect(isImageData('image/jpeg;base64,/9j/4AAQSkZJRg==')).toBe(false);
-    expect(isImageData('data:image/jpg')).toBe(false);
-    expect(isImageData('')).toBe(false);
   });
 });

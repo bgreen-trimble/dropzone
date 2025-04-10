@@ -24,7 +24,12 @@ export const fromClipboard = (): Promise<Blob | undefined> =>
   navigator.clipboard.read()
     .then((clipboardItems) => fromClipboardItems(clipboardItems))
     .then((blobs) => {
-      blobs.forEach((blob) => console.log(blob));
+      blobs.forEach((blob) => {
+        blob.text().then((text) => {
+          console.log(blob.type, text)
+        }).catch(() => {
+        });
+      });
       blobs.sort((a, b) => a.type.localeCompare(b.type));
       // get all the blobs that are images
       const images = blobs.filter((blob) => blob.type.startsWith('image/'));

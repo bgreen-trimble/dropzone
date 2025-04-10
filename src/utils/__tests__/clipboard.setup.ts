@@ -17,6 +17,11 @@ const two: Record<string, Blob> = {
   "image/png": b64toBlob("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII"),
 }
 
+const three: Record<string, Blob> = {
+  "text/plain": new Blob(['data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='], { type: "text/plain" }),
+}
+
+//const clipboardItems = [createClipboardItem(one), createClipboardItem(two), createClipboardItem(three)]
 const clipboardItems = [createClipboardItem(one), createClipboardItem(two)]
 
 beforeAll(() => {

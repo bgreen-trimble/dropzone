@@ -8,18 +8,6 @@ export const isUrl = (url: string) => {
 }
 
 /**
- * Checks if the provided string is both a valid URL and represents an image file.
- *
- * @param value - The string to check if it's an image URL
- * @returns True if the string is both a valid URL and an image file name, false otherwise
- * @see isUrl
- * @see isImageName
- */
-export const isImageUrl = (value: string) => {
-  return isUrl(value) && isImageName(value)
-}
-
-/**
  * "data:image/" is a data URL scheme used to embed small image files directly into HTML or other web documents, avoiding external requests.
  * The data URL consists of a prefix (data:image/) followed by the MIME type and encoding information, and then the actual image data encoded in base64.
  * This allows images to be included inline, making it easier to share or embed images without needing separate files.
@@ -36,6 +24,18 @@ export const isImageUrl = (value: string) => {
  * @param {string} data - The data URL to check.
  * @returns {boolean} - True if the data URL is valid and represents an image, false otherwise.
  */
-export const isImageData = (data: string) => {
+export const isImageDataUrl = (data: string) => {
   return data.match(/^data:image\/(jpeg|jpg|gif|png|webp);base64/) !== null
+}
+
+/**
+ * Checks if the provided string is both a valid URL and represents an image file.
+ *
+ * @param value - The string to check if it's an image URL
+ * @returns True if the string is both a valid URL and an image file name, false otherwise
+ * @see isUrl
+ * @see isImageName
+ */
+export const isImageUrl = (value: string) => {
+  return (isUrl(value) && isImageName(value)) || isImageDataUrl(value)
 }
