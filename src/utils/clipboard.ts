@@ -24,6 +24,7 @@ export const fromClipboard = (): Promise<Blob | undefined> =>
   navigator.clipboard.read()
     .then((clipboardItems) => fromClipboardItems(clipboardItems))
     .then((blobs) => {
+      // Log the blobs to the console
       blobs.forEach((blob) => {
         blob.text().then((text) => {
           console.log(blob.type, text)
