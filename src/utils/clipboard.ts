@@ -10,6 +10,30 @@
 import { isTextMimeType } from "./media";
 import { fromText } from "./text";
 
+// Log the clipboard items to the console
+export const dumpClipboard = () => {
+  navigator.clipboard.read()
+    .then((clipboardItems) => {
+      clipboardItems.forEach((clipboardItem) => {
+        console.log('ClipboardItem:', clipboardItem);
+        clipboardItem.types.forEach((type) => {
+          clipboardItem.getType(type).then((blob) => {
+            console.log('Blob:', blob);
+            blob.text().then((text) => {
+              console.log('Text:', text);
+            }
+            ).catch(() => {
+            });
+          }).catch(() => {
+          });
+        });
+      });
+    })
+    .catch((error) => {
+      console.error('Error reading clipboard:', error);
+    });
+}
+
 const fromClipboardItems = (clipboardItems: ClipboardItem[]) => {
   // Map each clipboard item to an array of blobs (one for each type)
   const blobArrays = Promise.all(

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import { isImageMimeType } from '@/utils';
+import { dumpClipboard, isImageMimeType } from '@/utils';
 
 type Item = {
   type: string;
@@ -25,6 +25,7 @@ const revokeObjectURLs = () => {
 };
 
 const readClipboard = async () => {
+  dumpClipboard()
   revokeObjectURLs()
 
   items.value = [];
