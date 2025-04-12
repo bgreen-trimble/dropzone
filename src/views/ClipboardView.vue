@@ -88,7 +88,6 @@ onUnmounted(() => {
 
 .fixed {
   width: 0px;
-  /* Shrinks to fit content */
   text-align: left;
 }
 
@@ -96,14 +95,12 @@ table {
   border-collapse: collapse;
   margin-bottom: 20px;
   width: 100%;
-  /* Full width */
 }
 
 th,
 td {
   border: 1px solid #ddd;
   padding: 4px;
-  /* Reduce padding to tighten the layout */
   text-align: left;
 }
 

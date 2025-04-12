@@ -2,8 +2,8 @@
  * This module extracts an image URL from various sources, including HTML.
  */
 
-import { isImageUrl } from './url'
-import { fetchImage } from './image';
+import { isImageDataUrl, isImageUrl } from './url'
+import { fetchImage, toBlob } from './image';
 
 /**
  * Extracts image URLs from HTML.
@@ -82,6 +82,10 @@ export const fromPlain = (type: string, values: string) => {
   return fromUrls(type, [values]);
 }
 
+const toImage = (url: string) => {
+  return isImageDataUrl(url) ? toBlob(url) : fetchImage(url);
+}
+
 /*
   * This function extracts the URLs from text mime types.
   *
@@ -94,6 +98,6 @@ export const fromText = (type: DOMParserSupportedType | 'text/plain', value: str
   urls.forEach((url) => console.log('fromText', type, url));
 
   return urls.reduce((acc:  Promise<Blob | undefined>, url: string) =>
-    acc.then((acc: Blob | undefined) => (acc !== undefined) ? acc : fetchImage(url).catch(() => undefined)),
+    acc.then((acc: Blob | undefined) => (acc !== undefined) ? acc : toImage(url).catch(() => undefined)),
     Promise.resolve(undefined))
 }
