@@ -98,10 +98,8 @@ describe.each(tests)('retrieve image from clipboard - name: $name, type: $type, 
 
   it('should match the expected result', async () => {
     const image = await fromClipboard();
-    console.log('image', image?.type);
     expect(navigator.clipboard.read).toHaveBeenCalled();
     expect(image !== undefined).toEqual(expected);
     expect(image?.type).toEqual(type);
   });
-
 })

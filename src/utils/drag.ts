@@ -1,4 +1,4 @@
-import { isTextMimeType, sortTypes } from './media';
+import { isImageMimeType, isTextMimeType, sortTypes } from './media';
 import { fromText } from './text';
 
 /*
@@ -23,8 +23,12 @@ export const fromDrop = async (event: DragEvent): Promise<Blob | File | undefine
 
     if (type === 'Files') {
       const files = dataTransfer?.files;
-      if (files && files.length > 0) {
-        return Promise.resolve(files[0]);
+
+      if (files) {
+        const file = Array.from(files).find(({ type }) => isImageMimeType(type));
+        if (file) {
+          return Promise.resolve(file);
+        }
       }
     }
     else if (isTextMimeType(type)) {

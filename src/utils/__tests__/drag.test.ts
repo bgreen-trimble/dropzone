@@ -1,57 +1,123 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, vi, afterAll } from 'vitest';
 import { fromDrop } from '../drag';
 
-const data: Record<string, string> = {
-  "text/uri-list": 'https://www.amazon.com/sspa/click?ie=UTF8&spc=MToxMDI5MDE0MTk1NDE4MjcwOjE3NDMzMTI5Mjg6c3BfZGV0YWlsOjMwMDY5ODg3NDA0NTMwMjo6Ojo&url=%2Fdp%2FB09GW71YT6%2Fref%3Dsspa_dk_detail_6%3Fpsc%3D1%26pd_rd_i%3DB09GW71YT6%26pd_rd_w%3DYWHsM%26content-id%3Damzn1.sym.8c2f9165-8e93-42a1-8313-73d3809141a2%26pf_rd_p%3D8c2f9165-8e93-42a1-8313-73d3809141a2%26pf_rd_r%3DF0BH83H9ZPQV31KAX5CR%26pd_rd_wg%3DmHcRw%26pd_rd_r%3D17c0f5c7-d222-4fc5-aeb8-e09d7c11b07c%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9kZXRhaWw',
-  "text/html": '<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"><img alt="Brink of War: A Prosecution Force Thriller (The Prosecution Force Thrillers Book 1)" src="https://m.media-amazon.com/images/I/41BqDTjayAL.UX300_PJku-sticker-v7,TopRight,0,-50_AC_SF480,480_.jpg" class="a-dynamic-image" data-a-dynamic-image="{&quot;https://m.media-amazon.com/images/I/41BqDTjayAL.UX300_PJku-sticker-v7,TopRight,0,-50_AC_SF480,480_.jpg&quot;:[480,480]}" style="max-width:160px;max-height:160px;">'
-}
+const tests = [
+  {
+    name: "HTML is image source attribute",
+    items: {
+      "text/html": '<meta charset="utf-8"><img src="https://example.com/one.jpg" alt="View Papillon 88&quot; Oak Wood Dining Table by Laura Kim - image 1 of 13">',
+      "text/uri-list": "https://example.com?something=else",
+    },
+    type: "image/jpeg",
+    expected: true,
+  },
+  {
+    name: "HTML is image style attribute",
+    items: {
+      "text/html": '<meta charset="utf-8"><div style="background-image: url(https://example.com/one.jpg)"></div>',
+      "text/plain": "Papillon 88\" Oak Wood Dining Table by Laura Kim",
+    },
+    type: "image/png",
+    expected: true,
+  },
+  {
+    name: "HTML is image source attribute without an image suffix",
+    items: {
+      "text/html": '<meta charset="utf-8"><img src="https://example.com/testing" alt="View Papillon 88&quot; Oak Wood Dining Table by Laura Kim - image 1 of 13">',
+      "text/uri-list": "https://example.com?something=else",
+    },
+    type: "image/png",
+    expected: true,
+  },
+  {
+    name: "image/png is used",
+    items: {
+      "text/html": '<meta charset="utf-8"><img src="https://example.com/two.jpg" alt="View Tate 60&quot; Walnut Wood Round Dining Table - image 1 of 12">',
+    },
+    type: "image/png",
+    expected: true,
+  },
+  {
+    name: "Data URL is used",
+    items: {
+      "text/plain": 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+    },
+    type: "image/gif",
+    expected: true,
+  },
+  {
+    name: "URL has query params",
+    items: {
+      "text/plain": 'https://example.com/four.jpg?width=628&quality=75&crop=3:2&auto=webp',
+    },
+    type: "image/jpeg",
+    expected: true,
+  },
+  {
+    name: "text/plain does not contain an image",
+    items: {
+      "text/plain": 'this is just text',
+    },
+    type: undefined,
+    expected: false,
+  },
+  {
+    name: "file test - with image",
+    items: {
+      "Files": [
+        new File(['file content'], 'test.txt', { type: 'text/plain' }),
+        new File([new Uint8Array([
+          137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 8, 0, 0,
+          0, 8, 8, 2, 0, 0, 0, 75, 109, 41, 220, 0, 0, 0, 34, 73, 68, 65, 84, 8, 215, 99, 120,
+          173, 168, 135, 21, 49, 0, 241, 255, 15, 90, 104, 8, 33, 129, 83, 7, 97, 163, 136,
+          214, 129, 93, 2, 43, 2, 0, 181, 31, 90, 179, 225, 252, 176, 37, 0, 0, 0, 0, 73, 69,
+          78, 68, 174, 66, 96, 130])], 'test.png', { type: 'image/png' }),
+      ],
+    },
+    type: 'image/png',
+    expected: true,
+  },
+  {
+    name: "file test - without image",
+    items: {
+      "Files": [new File(['file content'], 'test.txt', { type: 'text/plain' })],
+    },
+    type: undefined,
+    expected: false,
+  },
 
-const file = new File(['file content'], 'test.txt', { type: 'text/plain' });
-const fileList: FileList = [file].values() as unknown as FileList;
-const fileData: Record<string, FileList> = {
-  "Files": fileList,
-}
+]
 
-describe('Test Drag', () => {
+describe.each(tests)('retrieve image from drag event - name: $name, type: $type, expected: $expected', ({ items, type, expected }) => {
   let dragEvent: DragEvent;
-  let dragEventWithFiles: DragEvent;
 
   beforeAll(() => {
+    const fetchStub = vi.fn().mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        blob: () => Promise.resolve(new Blob(['mocked fetch response'], { type }))
+      }),
+    );
+
+    global.fetch = fetchStub;
+
     dragEvent = {
       dataTransfer: {
-        types: Object.keys(data),
-        getData: vi.fn().mockReturnValue((format: string) => data[format] || ''),
+        types: Object.keys(items),
+        files: items["Files"],
+        getData: vi.fn().mockImplementation((format: string) => items[format as keyof typeof items] || ''),
       }
     } as unknown as DragEvent;
+  });
 
-    dragEventWithFiles = {
-      dataTransfer: {
-      _types: Object.keys(fileData),
-      get types() {
-        return this._types;
-      },
-      _files: fileData["Files"],
-      get files() {
-        return this._files;
-      },
-      getData: vi.fn().mockImplementation((format: string) => fileData[format] || ''),
-      }
-    } as unknown as DragEvent;
+  afterAll(() => {
+    vi.restoreAllMocks();
   })
 
-  it('should return items from the drag event', async () => {
+  it('should match the expected result', async () => {
     const image = await fromDrop(dragEvent);
-    expect(dragEvent.dataTransfer?.getData).toHaveBeenCalled();
-    expect(image).toEqual(undefined);
-  });
-
-  it('should return items from a file drag event', async () => {
-    const typesSpy = vi.spyOn(dragEventWithFiles.dataTransfer as DataTransfer, 'types', 'get');
-    const filesSpy = vi.spyOn(dragEventWithFiles.dataTransfer as DataTransfer, 'types', 'get');
-
-    const image = await fromDrop(dragEventWithFiles);
-    expect(typesSpy).toHaveBeenCalled();
-    expect(filesSpy).toHaveBeenCalled();
-    expect(image).toEqual(undefined);
+    expect(image !== undefined).toEqual(expected);
+    expect(image?.type).toEqual(type);
   });
 })
+
