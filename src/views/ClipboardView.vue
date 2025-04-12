@@ -24,7 +24,7 @@ const revokeObjectURLs = () => {
   }
 };
 
-const readClipboard = async () => {
+const readClipboard = () => {
   dumpClipboard()
   revokeObjectURLs()
 
@@ -38,10 +38,16 @@ const readClipboard = async () => {
 
 onMounted(() => {
   readClipboard();
+  if (navigator.clipboard) {
+    navigator.clipboard.addEventListener("clipboardchange", readClipboard);
+  }
 });
 
 onUnmounted(() => {
   revokeObjectURLs();
+  if (navigator.clipboard) {
+    navigator.clipboard.removeEventListener("clipboardchange", readClipboard);
+  }
 });
 </script>
 
@@ -81,20 +87,23 @@ onUnmounted(() => {
 }
 
 .fixed {
-  width: 0px; /* Shrinks to fit content */
+  width: 0px;
+  /* Shrinks to fit content */
   text-align: left;
 }
 
 table {
   border-collapse: collapse;
   margin-bottom: 20px;
-  width: 100%; /* Full width */
+  width: 100%;
+  /* Full width */
 }
 
 th,
 td {
   border: 1px solid #ddd;
-  padding: 4px; /* Reduce padding to tighten the layout */
+  padding: 4px;
+  /* Reduce padding to tighten the layout */
   text-align: left;
 }
 
