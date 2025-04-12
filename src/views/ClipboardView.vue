@@ -61,7 +61,7 @@ onUnmounted(() => {
       </thead>
       <tbody>
         <tr v-for="(media, index) in item" :key="index" :class="{ 'gray-row': index % 2 !== 0 }">
-          <td>{{ media.type }}</td>
+          <td class="fixed">{{ media.type }}</td>
           <td v-if="isImageMimeType(media.type)"><img :src="media.data" height="200px" /></td>
           <td v-else>{{ media.data }}</td>
         </tr>
@@ -80,16 +80,21 @@ onUnmounted(() => {
   font-weight: bold;
 }
 
+.fixed {
+  width: 0px; /* Shrinks to fit content */
+  text-align: left;
+}
+
 table {
   border-collapse: collapse;
   margin-bottom: 20px;
-  width: 100%;
+  width: 100%; /* Full width */
 }
 
 th,
 td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 4px; /* Reduce padding to tighten the layout */
   text-align: left;
 }
 
